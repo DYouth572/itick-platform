@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="vi" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}iTick - Nền tảng Bán vé Sự kiện Trực tuyến{% endblock %}</title>
+
+  <!-- Ensure Clean Light Theme Mode -->
+  <script>
+    (function() {
+      try {
+        localStorage.removeItem('eventtick_theme');
+        document.documentElement.classList.remove('dark');
+      } catch (e) {}
+    })();
+  </script>
+
+  <!-- Favicon & App Icons (The Orbital Portal) -->
+  <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
+  <!-- Google Fonts: Playfair Display, Cormorant Garamond & Raleway (Gateway style slender typography) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Raleway:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind = window.tailwind || {};
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          borderRadius: {
+            'none': '0px',
+            'sm': '4px',
+            'DEFAULT': '6px',
+            'md': '6px',
+            'lg': '6px',
+            'xl': '6px',
+            '2xl': '6px',
+            '3xl': '6px',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+            serif: ['"Playfair Display"', '"Cormorant Garamond"', 'Georgia', 'serif'],
+            luxury: ['"Playfair Display"', '"Cormorant Garamond"', 'Georgia', 'serif'],
+            gateway: ['"Gateway"', '"Raleway"', 'sans-serif'],
+          },
+          colors: {
+            navy: {
+              50: '#F0F5FC',
+              100: '#E1ECF9',
+              200: '#C3D9EF',
+              300: '#94BAE3',
+              400: '#5C94D1',
+              500: '#1E60D5',
+              600: '#0D47A1',
+              700: '#002D80',
+              800: '#001B5E',
+              900: '#000080',
+              950: '#020817',
+            },
+            brand: {
+              50: '#F0F5FC',
+              100: '#E1ECF9',
+              500: '#1E60D5',
+              600: '#000080',
+              700: '#001B5E',
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Chuẩn hóa toàn bộ card, khung viền, container, button, input bo góc 6px tinh tế theo yêu cầu */
+    .card-lift,
+    .ticket-stub,
+    button:not(.rounded-full),
+    input:not(.rounded-full),
+    select:not(.rounded-full),
+    textarea:not(.rounded-full) {
+      border-radius: 6px;
+    }
+
+    /* Gateway / Raleway Slender Font */
+    .font-gateway {
+      font-family: 'Gateway', 'Raleway', sans-serif;
+    }
+
+    /* Ngăn tuyệt đối xuống dòng cho Đăng xuất, Đăng ký, Đăng nhập */
+    .btn-auth,
+    a[href="/register"],
+    a[href="/login"],
+    button[onclick*="Logout"],
+    button[onclick*="handleLogout"] {
+      white-space: nowrap !important;
+      word-break: keep-all !important;
+    }
+
+    /* Font smoothing (Make Interfaces Feel Better) */
+    html {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Tabular numbers for clean prices and counters */
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Text wrapping */
+    .text-balance {
+      text-wrap: balance;
+    }
+    .text-pretty {
+      text-wrap: pretty;
+    }
+
+    /* Image subtle inset outline */
+    .img-inset-ring {
+      outline: 1px solid rgba(15, 23, 42, 0.08);
+      outline-offset: -1px;
+    }
+
+    /* Tactile button press - scoped transition, never transition: all */
+    .btn-tactile {
+      transition-property: transform, background-color, border-color, box-shadow, color;
+      transition-duration: 150ms;
+      transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .btn-tactile:active {
+      transform: scale(0.97);
+    }
+
+    /* Card lift with refined elevation */
+    .card-lift {
+      transition-property: transform, box-shadow, border-color;
+      transition-duration: 200ms;
+      transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .card-lift:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px -6px rgba(15, 23, 42, 0.08), 0 4px 10px -2px rgba(15, 23, 42, 0.04);
+    }
+
+    /* Boarding pass perforation cutouts */
+    .ticket-stub {
+      position: relative;
+    }
+    .ticket-notch-left, .ticket-notch-right {
+      position: absolute;
+      top: 66%;
+      width: 1.25rem;
+      height: 1.25rem;
+      background-color: #f8fafc; /* slate-50 */
+      border-radius: 9999px;
+      z-index: 10;
+      border: 1px solid #e2e8f0;
+      transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+    html.dark .ticket-notch-left, html.dark .ticket-notch-right {
+      background-color: #0b0f19; /* dark canvas */
+      border-color: #334155;
+    }
+    .ticket-notch-left {
+      left: -0.6875rem;
+      clip-path: polygon(50% 0%, 100% 0%, 100% 100%, 50% 100%);
+    }
+    .ticket-notch-right {
+      right: -0.6875rem;
+      clip-path: polygon(0% 0%, 50% 0%, 50% 100%, 0% 100%);
+    }
+    /* ========================================================
+       AMBIENT AURORA MESH (GPU-ACCELERATED SOFT RADIAL MESH)
+       ======================================================== */
+    .aurora-container {
+      position: fixed;
+      inset: 0;
+      z-index: -10;
+      pointer-events: none;
+      overflow: hidden;
+      isolation: isolate;
+      contain: paint;
+      transition: background-color 0.5s ease;
+    }
+
+    /* Base canvas background */
+    html:not(.dark) .aurora-container {
+      background-color: #f8fafc; /* Canvas đệm nhẹ cho pure white cards */
+    }
+    html.dark .aurora-container {
+      background-color: #020817; /* Midnight Royal Navy Space */
+    }
+
+    /* Aurora Orbs using Soft Radial Gradients (70% transparent color stops) */
+    .aurora-orb {
+      position: absolute;
+      border-radius: 9999px;
+      will-change: transform;
+      transform: translate3d(0, 0, 0);
+      mix-blend-mode: normal;
+      pointer-events: none;
+    }
+
+    /* Orb 1: Royal Navy & Sapphire flow */
+    .aurora-orb-1 {
+      top: -10%;
+      left: 15%;
+      width: 55vw;
+      height: 55vw;
+      min-width: 450px;
+      min-height: 450px;
+      animation: aurora-drift-1 26s ease-in-out infinite alternate;
+    }
+    html:not(.dark) .aurora-orb-1 {
+      background: radial-gradient(ellipse at center, rgba(0, 0, 128, 0.12) 0%, rgba(30, 96, 213, 0.07) 45%, transparent 70%);
+    }
+    html.dark .aurora-orb-1 {
+      background: radial-gradient(ellipse at center, rgba(30, 96, 213, 0.22) 0%, rgba(13, 71, 161, 0.14) 50%, transparent 70%);
+    }
+
+    /* Orb 2: Ocean Sapphire & Deep Blue flow */
+    .aurora-orb-2 {
+      top: 35%;
+      right: -8%;
+      width: 50vw;
+      height: 50vw;
+      min-width: 400px;
+      min-height: 400px;
+      animation: aurora-drift-2 30s ease-in-out infinite alternate;
+    }
+    html:not(.dark) .aurora-orb-2 {
+      background: radial-gradient(ellipse at center, rgba(13, 71, 161, 0.10) 0%, rgba(195, 217, 239, 0.12) 50%, transparent 70%);
+    }
+    html.dark .aurora-orb-2 {
+      background: radial-gradient(ellipse at center, rgba(0, 27, 94, 0.25) 0%, rgba(2, 8, 23, 0.15) 50%, transparent 70%);
+    }
+
+    /* Orb 3: Arctic Ice / Pure Frost Blue flow */
+    .aurora-orb-3 {
+      bottom: -15%;
+      left: 5%;
+      width: 60vw;
+      height: 60vw;
+      min-width: 500px;
+      min-height: 500px;
+      animation: aurora-drift-3 34s ease-in-out infinite alternate;
+    }
+    html:not(.dark) .aurora-orb-3 {
+      background: radial-gradient(ellipse at center, rgba(186, 230, 253, 0.22) 0%, rgba(225, 236, 249, 0.12) 50%, transparent 70%);
+    }
+    html.dark .aurora-orb-3 {
+      background: radial-gradient(ellipse at center, rgba(56, 189, 248, 0.14) 0%, rgba(14, 116, 144, 0.08) 50%, transparent 70%);
+    }
+
+    /* Hardware Accelerated Drift Keyframes */
+    @keyframes aurora-drift-1 {
+      0% { transform: translate3d(0, 0, 0) scale(1); }
+      50% { transform: translate3d(7vw, 6vh, 0) scale(1.1); }
+      100% { transform: translate3d(-5vw, 10vh, 0) scale(0.95); }
+    }
+    @keyframes aurora-drift-2 {
+      0% { transform: translate3d(0, 0, 0) scale(1); }
+      50% { transform: translate3d(-8vw, -6vh, 0) scale(1.08); }
+      100% { transform: translate3d(6vw, -4vh, 0) scale(0.92); }
+    }
+    @keyframes aurora-drift-3 {
+      0% { transform: translate3d(0, 0, 0) scale(1); }
+      50% { transform: translate3d(5vw, -8vh, 0) scale(1.12); }
+      100% { transform: translate3d(-7vw, 4vh, 0) scale(0.98); }
+    }
+
+    /* Accessibility: Respect prefers-reduced-motion */
+    @media (prefers-reduced-motion: reduce) {
+      .aurora-orb {
+        animation: none !important;
+      }
+    }
+
+    /* Global Dark Mode form input rules (Council Recommendation) */
+    html.dark input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]),
+    html.dark select,
+    html.dark textarea {
+      background-color: #1e293b !important;
+      color: #f1f5f9 !important;
+      border-color: #334155 !important;
+    }
+    html.dark input::placeholder,
+    html.dark textarea::placeholder {
+      color: #94a3b8 !important;
+    }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="min-h-full flex flex-col font-sans text-slate-900 dark:text-slate-100 antialiased selection:bg-indigo-100 selection:text-indigo-800 relative transition-colors duration-300">
+
+  <!-- AMBIENT AURORA MESH BACKGROUND (Light Pearlescent / Midnight Luxe) -->
+  <div class="aurora-container" aria-hidden="true">
+    <div class="aurora-orb aurora-orb-1"></div>
+    <div class="aurora-orb aurora-orb-2"></div>
+    <div class="aurora-orb aurora-orb-3"></div>
+  </div>
+
+  <!-- NAVBAR -->
+  <header class="sticky top-0 z-40 bg-white/85 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 transition-colors duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        
+        <!-- Logo -->
+        <div class="flex items-center gap-3">
+          <a href="/" class="flex items-center gap-2.5 group py-1 min-h-[44px] rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-[#000080]">
+            <div class="relative w-9 h-9 flex items-center justify-center shrink-0">
+              <img 
+                src="/static/images/logo-128.png" 
+                alt="iTick Logo" 
+                class="w-9 h-9 object-contain select-none transition-transform duration-200 ease-out group-hover:scale-105 group-active:scale-95" 
+                width="36" 
+                height="36"
+                loading="eager"
+              />
+            </div>
+            <div class="flex flex-col select-none">
+              <span class="font-bold text-lg tracking-tight text-slate-900 dark:text-white group-hover:text-[#000080] dark:group-hover:text-sky-400 transition-colors duration-150 text-balance">iTick</span>
+              <span class="text-[10px] uppercase font-semibold tracking-wider text-slate-500 dark:text-slate-400 -mt-1">Vé Sự Kiện Trực Tuyến</span>
+            </div>
+          </a>
+
+          <!-- Navigation Links -->
+          <nav class="hidden md:flex items-center gap-1 ml-6 text-sm font-medium text-slate-600 dark:text-slate-300">
+            <a href="/" class="px-3 py-2 rounded-md hover:text-[#000080] dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition">Khám phá Sự kiện</a>
+            {% if current_user %}
+              <a href="/my-tickets" class="px-3 py-2 rounded-md hover:text-[#000080] dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition">Vé của tôi</a>
+              {% if current_user.role in ['ORGANIZER', 'ADMIN'] %}
+                <a href="/organizer" class="px-3 py-2 rounded-md hover:text-[#000080] dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition">Quản lý Sự kiện</a>
+                <a href="/checkin-gate" class="px-3 py-2 rounded-md hover:text-[#000080] dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition">Soát vé tại Cổng</a>
+              {% endif %}
+              {% if current_user.role == 'ADMIN' %}
+                <a href="/admin" class="px-3 py-2 rounded-md text-[#000080] dark:text-sky-400 hover:bg-[#F0F5FC] dark:hover:bg-slate-800/80 font-semibold transition">Quản trị Admin</a>
+              {% endif %}
+            {% endif %}
+          </nav>
+        </div>
+
+        <!-- Right Side: Account / Profile -->
+        <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+
+          {% if current_user %}
+            <div class="flex items-center gap-2 px-3.5 py-1.5 rounded-md bg-slate-100 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-200 whitespace-nowrap shrink-0">
+              <span class="font-semibold text-slate-900 dark:text-white whitespace-nowrap">{{ current_user.full_name | replace('(Sinh viên)', '') | replace('(sinh viên)', '') | trim }}</span>
+              {% if current_user.role == 'ORGANIZER' %}
+                <span class="px-1.5 py-0.5 rounded-md bg-[#E1ECF9] dark:bg-navy-950/80 text-[#000080] dark:text-sky-300 font-semibold text-[10px] whitespace-nowrap shrink-0">Ban tổ chức</span>
+              {% elif current_user.role == 'ADMIN' %}
+                <span class="px-1.5 py-0.5 rounded-md bg-purple-100 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300 font-semibold text-[10px] whitespace-nowrap shrink-0">Quản trị viên</span>
+              {% endif %}
+            </div>
+            <button onclick="handleLogout()" class="text-xs text-slate-600 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 font-medium px-2.5 py-1.5 rounded-md hover:bg-red-50 dark:hover:bg-red-950/30 btn-tactile whitespace-nowrap shrink-0 inline-flex items-center">Đăng xuất</button>
+          {% else %}
+            <a href="/login" class="text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-[#000080] dark:hover:text-white px-3.5 py-2 rounded-md hover:bg-[#F0F5FC] dark:hover:bg-slate-800/80 btn-tactile whitespace-nowrap shrink-0 inline-flex items-center">Đăng nhập</a>
+            <a href="/register" class="text-sm font-medium text-white bg-[#000080] hover:bg-[#001B5E] dark:bg-[#1E60D5] dark:hover:bg-[#0D47A1] px-4 py-2 rounded-md shadow-sm btn-tactile whitespace-nowrap shrink-0 inline-flex items-center">Đăng ký</a>
+          {% endif %}
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- FOOTER (Phong cách thanh lịch, tối giản & đồng bộ hệ thống) -->
+  <footer class="bg-slate-100/90 dark:bg-slate-950/85 backdrop-blur-sm border-t border-slate-200 dark:border-slate-800/80 mt-8 sm:mt-10 text-slate-600 dark:text-slate-400 font-sans transition-colors duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-6 sm:space-y-8">
+      
+      <!-- Dòng trên: Thông tin pháp nhân & Liên hệ -->
+      <div class="flex flex-col md:flex-row items-start justify-between gap-8">
+        
+        <!-- Cột trái: Thông tin doanh nghiệp vận hành iTick -->
+        <div class="space-y-2 max-w-2xl">
+          <div class="flex items-center gap-2 mb-1">
+            <img 
+              src="/static/images/logo-128.png" 
+              alt="iTick" 
+              class="w-5 h-5 object-contain select-none" 
+              width="20" 
+              height="20"
+              loading="lazy"
+            />
+            <h4 class="font-bold text-sm text-slate-900 dark:text-white tracking-wide uppercase">
+              CÔNG TY CỔ PHẦN CÔNG NGHỆ & DỊCH VỤ SỰ KIỆN ITICK
+            </h4>
+          </div>
+          <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed text-pretty">
+            Tầng 6, Tòa nhà Innovation Center, Đường Phạm Hùng, Phường Mỹ Đình 2, Quận Nam Từ Liêm, Hà Nội
+          </p>
+          <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed text-pretty">
+            Email: <a href="mailto:support@itick.vn" class="text-slate-800 dark:text-slate-200 hover:text-[#000080] dark:hover:text-sky-400 font-medium transition-colors">support@itick.vn</a> — Hotline: <span class="font-bold text-slate-800 dark:text-slate-200 tabular-nums font-mono">1900 6868</span> (8:00 – 21:30 các ngày từ thứ Hai đến Chủ nhật)
+          </p>
+          <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+            Số giấy chứng nhận đăng ký kinh doanh: <span class="tabular-nums">0109923841</span> do Sở Kế hoạch và Đầu tư TP. Hà Nội cấp
+          </p>
+        </div>
+
+        <!-- Cột phải: Danh mục liên kết dịch vụ (Chuẩn Ticketbox / Luma / VietnamWorks) -->
+        <div class="flex items-start gap-10 sm:gap-14 text-xs shrink-0 pt-1 lg:pt-0">
+          
+          <!-- Nhóm 1: Dành cho Khách hàng mua vé -->
+          <div class="space-y-2.5">
+            <h5 class="font-bold text-slate-900 dark:text-slate-200 tracking-wider uppercase text-[11px]">
+              Dành Cho Khách Hàng
+            </h5>
+            <ul class="space-y-2 text-slate-600 dark:text-slate-400">
+              <li>
+                <a href="/" class="hover:text-[#000080] dark:hover:text-sky-400 transition-colors inline-block">Khám phá sự kiện</a>
+              </li>
+              <li>
+                <a href="/my-tickets" class="hover:text-[#000080] dark:hover:text-sky-400 transition-colors inline-block">Vé của tôi & E-Ticket</a>
+              </li>
+              <li>
+                <a href="#" class="hover:text-[#000080] dark:hover:text-sky-400 transition-colors inline-block">Hướng dẫn đặt vé</a>
+              </li>
+              <li>
+                <a href="#" class="hover:text-[#000080] dark:hover:text-sky-400 transition-colors inline-block">Câu hỏi thường gặp</a>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Nhóm 2: Dành cho Ban tổ chức sự kiện -->
+          <div class="space-y-2.5">
+            <h5 class="font-bold text-slate-900 dark:text-slate-200 tracking-wider uppercase text-[11px]">
+              Dành Cho Ban Tổ Chức
+            </h5>
+            <ul class="space-y-2 text-slate-600 dark:text-slate-400">
+              <li>
+                <a href="/organizer" class="hover:text-[#000080] dark:hover:text-sky-400 transition-colors inline-block">Tạo & Quản lý sự kiện</a>
+              </li>
+              <li>
+                <a href="/checkin-gate" class="hover:text-[#000080] dark:hover:text-sky-400 transition-colors inline-block">Cổng soát vé Check-in</a>
+              </li>
+              <li>
+                <a href="/quy-dinh-ban-ve" class="hover:text-[#000080] dark:hover:text-sky-400 transition-colors inline-block font-medium">Quy định bán vé & Phí sàn</a>
+              </li>
+              <li>
+                <a href="mailto:support@itick.vn" class="hover:text-[#000080] dark:hover:text-sky-400 transition-colors inline-block">Hợp tác phát hành</a>
+              </li>
+            </ul>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Dòng dưới: Bản quyền & Các liên kết chính sách -->
+      <div class="border-t border-slate-200 dark:border-slate-800/80 pt-6 flex flex-col md:flex-row items-center justify-between text-xs text-slate-500 dark:text-slate-400 gap-4">
+        
+        <!-- Bản quyền -->
+        <span>© 2026 Bản quyền thuộc về iTick. Tất cả các quyền được bảo hộ.</span>
+
+        <!-- Danh sách chính sách hàng ngang -->
+        <div class="flex items-center gap-4 sm:gap-6 flex-wrap">
+          <a href="#" class="hover:text-slate-900 dark:hover:text-white transition-colors">Điều khoản sử dụng</a>
+          <a href="#" class="hover:text-slate-900 dark:hover:text-white transition-colors">Chính sách bảo mật</a>
+          <a href="#" class="hover:text-slate-900 dark:hover:text-white transition-colors">Chính sách thanh toán</a>
+          <a href="#" class="hover:text-slate-900 dark:hover:text-white transition-colors">Báo cáo vi phạm</a>
+        </div>
+
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- ================= PLAN CANVAS: TESTER & REVIEW TOOLBAR ================= -->
+  <div id="planCanvasWidget" class="hidden">
+    <!-- Floating Trigger Button -->
+    <button id="planCanvasToggleBtn" onclick="togglePlanCanvas()" class="flex items-center gap-2 px-4 py-2.5 bg-slate-900/95 hover:bg-slate-900 text-white rounded-md shadow-xl border border-slate-700/80 hover:shadow-2xl text-xs font-semibold btn-tactile backdrop-blur-md">
+      <span>Góp ý giao diện (Canvas)</span>
+      <span id="canvasArrow" class="text-slate-400 transition-transform">▲</span>
+    </button>
+
+    <!-- Slide-over / Popup Card -->
+    <div id="planCanvasPanel" class="hidden absolute bottom-14 right-0 w-96 max-w-[calc(100vw-2rem)] bg-white/95 backdrop-blur-xl rounded-md shadow-2xl border border-slate-200 overflow-hidden text-slate-800 transition-all duration-200">
+      
+      <!-- Panel Header -->
+      <div class="px-4 py-3 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white flex items-center justify-between">
+        <div>
+          <h3 class="text-xs font-bold leading-tight">Góp ý Giao diện Trực tiếp</h3>
+          <p class="text-[10px] text-slate-300">Nhấn xem & Gửi yêu cầu chỉnh sửa cho AI</p>
+        </div>
+        <button onclick="togglePlanCanvas()" class="text-slate-400 hover:text-white text-base px-2 py-0.5 rounded-md leading-none">&times;</button>
+      </div>
+
+      <!-- Quick Role Switcher -->
+      <div class="p-3.5 bg-slate-50/90 border-b border-slate-200/80 space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Chuyển tài khoản demo:</span>
+          <span class="text-[10px] text-slate-500 font-mono">1-Click Login</span>
+        </div>
+        <div class="grid grid-cols-3 gap-1.5 text-[11px]">
+          <button onclick="canvasQuickLogin('attendee@eventtick.com', 'att123')" class="px-2 py-1.5 bg-white hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 rounded-md border border-slate-200 font-semibold text-center btn-tactile shadow-xs">
+            Khách mua vé
+          </button>
+          <button onclick="canvasQuickLogin('organizer@eventtick.com', 'org123')" class="px-2 py-1.5 bg-white hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 rounded-md border border-slate-200 font-semibold text-center btn-tactile shadow-xs">
+            Ban tổ chức
+          </button>
+          <button onclick="canvasQuickLogin('admin@eventtick.com', 'admin123')" class="px-2 py-1.5 bg-white hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 rounded-md border border-slate-200 font-semibold text-center btn-tactile shadow-xs">
+            Quản trị viên
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Page Navigation -->
+      <div class="px-3.5 py-2.5 bg-white border-b border-slate-100">
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Điều hướng nhanh màn hình:</span>
+        <div class="flex flex-wrap gap-1 text-[11px]">
+          <a href="/" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md font-medium">Trang chủ</a>
+          <a href="/events/1" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md font-medium">Chi tiết & Đặt vé</a>
+          <a href="/my-tickets" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md font-medium">Vé của tôi</a>
+          <a href="/organizer" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md font-medium">Tổ chức</a>
+          <a href="/checkin-gate" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md font-medium">Soát vé cổng</a>
+          <a href="/admin" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md font-medium">Admin</a>
+        </div>
+      </div>
+
+      <!-- Feedback / Annotation Form -->
+      <div class="p-3.5 space-y-2.5 bg-slate-50/50">
+        <div class="flex items-center justify-between">
+          <label class="text-[11px] font-bold text-slate-800 uppercase tracking-wider">Góp ý / Yêu cầu sửa trực tiếp:</label>
+          <span class="text-[10px] text-indigo-600 font-medium">Canvas Feedback</span>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-2">
+          <select id="feedbackCategory" class="text-xs bg-white border border-slate-200 rounded-md px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+            <option value="Giao diện & Màu sắc">Giao diện & Màu sắc</option>
+            <option value="Bố cục & Typography">Bố cục & Typography</option>
+            <option value="Nghiệp vụ & Luồng">Nghiệp vụ & Luồng</option>
+            <option value="Nội dung / Copywriting">Nội dung / Chữ viết</option>
+            <option value="Báo lỗi chức năng">Báo lỗi chức năng</option>
+          </select>
+          <select id="feedbackScreen" class="text-xs bg-white border border-slate-200 rounded-md px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+            <option value="Trang hiện tại">Màn hình hiện tại</option>
+            <option value="Trang chủ (/)">Trang chủ (/)</option>
+            <option value="Chi tiết & Đặt vé (/events/1)">Chi tiết & Đặt vé</option>
+            <option value="Vé của tôi (/my-tickets)">Vé của tôi</option>
+            <option value="Cổng soát vé (/checkin-gate)">Soát vé cổng</option>
+            <option value="Bảng Admin (/admin)">Bảng Admin</option>
+          </select>
+        </div>
+
+        <textarea 
+          id="feedbackText" 
+          rows="2" 
+          placeholder="Ví dụ: Nút đặt vé nên đổi sang xanh ngọc, khoảng cách giữa các card hơi hẹp..." 
+          class="w-full text-xs p-2 bg-white border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500/80 resize-none placeholder:text-slate-400"
+        ></textarea>
+
+        <div class="flex items-center gap-2">
+          <button 
+            type="button" 
+            onclick="copyFeedbackPrompt()" 
+            class="flex-1 py-2 px-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-md shadow-sm btn-tactile flex items-center justify-center gap-1.5"
+          >
+            <span id="copyBtnText">Sao chép Prompt gửi AI sửa</span>
+          </button>
+        </div>
+
+        <div id="feedbackAlert" class="hidden p-2 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-md text-[11px] text-center font-medium">
+          Đã sao chép vào bộ nhớ! Hãy dán (Ctrl+V) vào ô chat với AI để áp dụng ngay.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    async function handleLogout() {
+      try {
+        await fetch('/api/auth/logout', { method: 'POST' });
+        document.cookie = 'access_token=; Max-Age=0; path=/;';
+        window.location.href = '/';
+      } catch (err) {
+        window.location.href = '/';
+      }
+    }
+
+    function togglePlanCanvas() {
+      const panel = document.getElementById('planCanvasPanel');
+      const arrow = document.getElementById('canvasArrow');
+      const isHidden = panel.classList.contains('hidden');
+      if (isHidden) {
+        panel.classList.remove('hidden');
+        arrow.style.transform = 'rotate(180deg)';
+      } else {
+        panel.classList.add('hidden');
+        arrow.style.transform = 'rotate(0deg)';
+      }
+    }
+
+    async function canvasQuickLogin(email, password) {
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email, password: password })
+        });
+        if (res.ok) {
+          window.location.reload();
+        } else {
+          const data = await res.json();
+          alert('Đăng nhập thất bại: ' + (data.detail || 'Lỗi'));
+        }
+      } catch (err) {
+        alert('Lỗi: ' + err.message);
+      }
+    }
+
+    function copyFeedbackPrompt() {
+      const cat = document.getElementById('feedbackCategory').value;
+      const screen = document.getElementById('feedbackScreen').value;
+      const text = document.getElementById('feedbackText').value.trim();
+      const currentUrl = window.location.pathname;
+
+      if (!text) {
+        alert('Vui lòng nhập nội dung góp ý cần sửa trước khi sao chép!');
+        return;
+      }
+
+      const prompt = `Yêu cầu chỉnh sửa giao diện & hệ thống từ Plan Canvas:\n- Màn hình: ${screen} (Đường dẫn hiện tại: ${currentUrl})\n- Phân loại: ${cat}\n- Nội dung góp ý cụ thể: ${text}\nHãy cập nhật mã nguồn theo yêu cầu trên.`;
+
+      navigator.clipboard.writeText(prompt).then(() => {
+        const alertBox = document.getElementById('feedbackAlert');
+        const btnText = document.getElementById('copyBtnText');
+        alertBox.classList.remove('hidden');
+        btnText.innerText = "Đã sao chép vào bộ nhớ!";
+        setTimeout(() => {
+          alertBox.classList.add('hidden');
+          btnText.innerText = "Sao chép Prompt gửi AI sửa";
+        }, 3000);
+      }).catch(err => {
+        prompt('Sao chép nội dung bên dưới dán vào chat:', prompt);
+      });
+    }
+  </script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

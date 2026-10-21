@@ -1,0 +1,1380 @@
+{% extends "base.html" %}
+
+{% block title %}Quản Lý Sự Kiện & Doanh Thu - iTick{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+
+  <!-- HEADER -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+    <div class="min-w-0 flex-1">
+      <div class="text-xs font-semibold text-indigo-600 uppercase tracking-wider mb-1">
+        Cổng Quản Trị Dành Cho Ban Tổ Chức
+      </div>
+      <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Quản Lý Sự Kiện & Doanh Thu</h1>
+      <p class="text-xs text-slate-500">
+        Khởi tạo sự kiện mới, quản lý cấu hình hạng vé và theo dõi danh sách người đăng ký chi tiết theo từng sự kiện
+      </p>
+    </div>
+    <div class="flex flex-wrap items-center gap-2.5 shrink-0">
+      <a href="/checkin-gate" class="px-4 py-2.5 bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 text-xs font-bold uppercase tracking-wider rounded-md shadow-xs transition-colors flex items-center gap-2">
+        <svg class="w-4 h-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+        </svg>
+        <span>Mở Máy Soát Vé Tại Cổng</span>
+      </a>
+      <button onclick="openCreateModal()" class="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold uppercase tracking-wider rounded-md shadow-xs transition-colors flex items-center gap-2 cursor-pointer">
+        <svg class="w-4 h-4 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        <span>Tạo Sự Kiện Mới</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- NOTICE BANNER: CHÍNH SÁCH PHÍ SÀN & NGHĨA VỤ BTC -->
+  <div class="p-3.5 bg-blue-50/80 border border-blue-200/90 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-blue-900">
+    <div class="flex items-center gap-2.5">
+      <span class="w-2 h-2 rounded-full bg-blue-600 shrink-0"></span>
+      <div>
+        <strong>Chính sách nền tảng:</strong> Phí dịch vụ sàn tiêu chuẩn là <strong>5.0%</strong> trên giá trị vé thực thu (miễn phí 100% đối với vé 0đ). Ban tổ chức nhận <strong>95.0%</strong> vào ví ngay khi phát sinh giao dịch.
+      </div>
+    </div>
+    <a href="/quy-dinh-ban-ve" class="font-bold underline text-[#000080] hover:text-[#001B5E] shrink-0 whitespace-nowrap">
+      Xem chi tiết quy định &rarr;
+    </a>
+  </div>
+
+  <!-- EXECUTIVE SUMMARY KPIS -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+    <div class="bg-white p-4 border border-slate-200 rounded-md shadow-xs">
+      <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Tổng Sự Kiện Đã Đăng</div>
+      <div class="text-2xl font-bold text-slate-900 tabular-nums">{{ events|length }}</div>
+      <div class="text-[11px] text-slate-400 mt-1">Đang quản lý trên hệ thống</div>
+    </div>
+    <div class="bg-white p-4 border border-slate-200 rounded-md shadow-xs">
+      <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Tổng Vé Đã Bán</div>
+      <div class="text-2xl font-bold text-slate-900 tabular-nums">{{ total_tickets_sold_all }} vé</div>
+      <div class="text-[11px] text-slate-400 mt-1">Từ {{ total_orders_all }} đơn xác nhận</div>
+    </div>
+    <div class="bg-white p-4 border border-slate-200 rounded-md shadow-xs">
+      <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Tổng Doanh Thu Vé (GMV)</div>
+      <div class="text-2xl font-bold text-slate-900 tabular-nums">{{ "{:,.0f}".format(total_revenue_all) }}đ</div>
+      <div class="text-[11px] text-rose-500 font-medium mt-1">Phí sàn iTick (5%): -{{ "{:,.0f}".format(total_platform_fee_all) }}đ</div>
+    </div>
+    <div class="bg-white p-4 border border-slate-200 rounded-md shadow-xs">
+      <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Thực Nhận Vào Ví (Net)</div>
+      <div class="text-2xl font-bold text-emerald-600 tabular-nums">{{ "{:,.0f}".format(total_net_payout_all) }}đ</div>
+      <div class="text-[11px] text-slate-500 font-medium mt-1">Số dư ví khả dụng: <span class="font-bold text-slate-800">{{ "{:,.0f}".format(current_user.balance) }}đ</span></div>
+    </div>
+  </div>
+
+  <!-- NAVIGATION TABS -->
+  <div class="border-b border-slate-200 bg-white px-4">
+    <nav class="flex space-x-2 sm:space-x-8 text-xs font-bold" aria-label="Tabs">
+      <button 
+        type="button" 
+        id="tabBtnEvents" 
+        onclick="switchMainTab('events')"
+        class="py-3.5 px-3 border-b-2 border-indigo-600 text-indigo-600 flex items-center gap-2 transition-colors cursor-pointer"
+      >
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        <span class="uppercase tracking-wider">Danh Sách Sự Kiện Đã Đăng</span>
+        <span class="px-2 py-0.5 text-[10px] bg-indigo-100 text-indigo-700 font-bold rounded-md">{{ events|length }}</span>
+      </button>
+
+      <button 
+        type="button" 
+        id="tabBtnAttendees" 
+        onclick="switchMainTab('attendees')"
+        class="py-3.5 px-3 border-b-2 border-transparent text-slate-500 hover:text-slate-900 flex items-center gap-2 transition-colors cursor-pointer"
+      >
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+        <span class="uppercase tracking-wider">Quản Lý Người Đăng Ký Theo Từng Sự Kiện</span>
+        <span class="px-2 py-0.5 text-[10px] bg-slate-100 text-slate-700 font-bold rounded-md">{{ total_orders_all }}</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- TAB 1: DANH SÁCH SỰ KIỆN ĐÃ ĐĂNG -->
+  <div id="tabContentEvents" class="space-y-4">
+    <div class="bg-white rounded-md border border-slate-200/80 shadow-xs overflow-hidden">
+      <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Danh Sách Sự Kiện Đã Đăng Của Ban Tổ Chức</h2>
+          <p class="text-xs text-slate-500">Nhấn "Xem người đăng ký" tại sự kiện bất kỳ để quản lý chi tiết danh sách người mua vé</p>
+        </div>
+        <span class="text-xs font-semibold text-slate-500 tabular-nums">{{ events|length }} sự kiện</span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-50 text-slate-600 uppercase font-bold tracking-wider border-b border-slate-200 text-[11px]">
+            <tr>
+              <th class="px-5 py-3 min-w-[220px]">Tên sự kiện</th>
+              <th class="px-5 py-3 whitespace-nowrap">Thời gian tổ chức</th>
+              <th class="px-5 py-3 whitespace-nowrap">Trạng thái</th>
+              <th class="px-5 py-3 whitespace-nowrap">Vé đã bán / Sức chứa</th>
+              <th class="px-5 py-3 whitespace-nowrap text-right">Doanh thu</th>
+              <th class="px-5 py-3 text-right whitespace-nowrap">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            {% for ev in events %}
+              <tr class="hover:bg-slate-50/80 transition">
+                <td class="px-5 py-3.5 font-bold text-slate-900 leading-snug">
+                  <a href="/events/{{ ev.id }}" class="hover:text-indigo-600 transition-colors">{{ ev.title }}</a>
+                  <div class="text-[11px] font-normal text-slate-400 mt-0.5">
+                    {{ ev.location }} &bull; {{ ev.tiers|length }} hạng vé
+                  </div>
+                </td>
+                <td class="px-5 py-3.5 tabular-nums whitespace-nowrap">
+                  <div class="font-bold text-slate-900 leading-tight">{{ ev.start_time.strftime("%d/%m/%Y") }}</div>
+                  <div class="text-[11px] text-slate-500 font-medium mt-0.5">{{ ev.start_time.strftime("%H:%M") }} - {{ ev.end_time.strftime("%H:%M") }}</div>
+                </td>
+                <td class="px-5 py-3.5 whitespace-nowrap">
+                  {% if ev.is_hidden_after_closure %}
+                    <span class="px-2.5 py-1 rounded-md text-[11px] font-medium bg-slate-100 text-slate-700 border border-slate-200 whitespace-nowrap" title="Sự kiện đã đóng mua vé và tự động ẩn khỏi Trang chủ (>10 phút)">ĐÃ ẨN</span>
+                  {% elif ev.is_sales_closed %}
+                    <span class="px-2.5 py-1 rounded-md text-[11px] font-medium bg-slate-100 text-slate-700 border border-slate-200 whitespace-nowrap" title="Sự kiện đã đóng cổng mua vé">ĐÃ ĐÓNG</span>
+                  {% elif ev.status == 'PUBLISHED' %}
+                    <span class="px-2.5 py-1 rounded-md text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap" title="Sự kiện đang mở bán công khai trên Trang chủ">ĐÃ MỞ BÁN</span>
+                  {% else %}
+                    <span class="px-2.5 py-1 rounded-md text-[11px] font-medium bg-slate-100 text-slate-700 border border-slate-200 whitespace-nowrap">{{ ev.status }}</span>
+                  {% endif %}
+                </td>
+                <td class="px-5 py-3.5 tabular-nums text-slate-700 whitespace-nowrap">
+                  <div class="font-bold">{{ ev.total_sold }} / {{ ev.capacity }} vé</div>
+                  <div class="w-24 bg-slate-200 h-1.5 rounded-md overflow-hidden mt-1">
+                    {% set pct = (ev.total_sold * 100 // ev.capacity) if ev.capacity else 0 %}
+                    <div class="bg-indigo-600 h-full" style="width: {{ pct if pct <= 100 else 100 }}%"></div>
+                  </div>
+                </td>
+                <td class="px-5 py-3.5 text-right font-mono tabular-nums whitespace-nowrap">
+                  <div class="font-bold text-slate-900">{{ "{:,.0f}".format(ev.total_revenue) }}đ</div>
+                  <div class="text-[11px] text-emerald-600 font-semibold">Net: {{ "{:,.0f}".format(ev.total_net_payout) }}đ</div>
+                </td>
+                <td class="px-5 py-3.5 text-right whitespace-nowrap space-x-1.5">
+                  <button 
+                    type="button" 
+                    onclick="showAttendeesForEvent({{ ev.id }})" 
+                    class="px-2 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-semibold rounded-md inline-block transition-colors text-xs"
+                    title="Chuyển sang Tab Người đăng ký của sự kiện này"
+                  >
+                    Xem người đăng ký ({{ ev.confirmed_orders|length }}) →
+                  </button>
+                  <a href="/checkin-gate?event_id={{ ev.id }}" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 font-semibold rounded-md inline-block transition-colors text-xs">
+                    Soát vé
+                  </a>
+                  <!-- Nút Xem Trang Sự Kiện (Đơn giản, không màu sắc) -->
+                  <a 
+                    href="/events/{{ ev.id }}" 
+                    target="_blank" 
+                    class="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 border border-slate-200 rounded-md inline-flex items-center justify-center transition-colors" 
+                    title="Xem trang sự kiện công khai"
+                    aria-label="Xem trang sự kiện"
+                  >
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </a>
+                  <!-- Nút Bút Chỉnh Sửa -->
+                  <button 
+                    type="button" 
+                    onclick="openEditModal({{ ev.id }})" 
+                    class="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 rounded-md inline-flex items-center justify-center transition-colors cursor-pointer"
+                    title="Chỉnh sửa bài đăng sự kiện"
+                  >
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                  </button>
+                  <!-- Nút Thùng Rác Xóa -->
+                  <button 
+                    type="button" 
+                    onclick="confirmDeleteEvent({{ ev.id }}, '{{ ev.title|replace('\'', '\\\'') }}')" 
+                    class="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 border border-slate-200 hover:border-rose-300 rounded-md inline-flex items-center justify-center transition-colors cursor-pointer"
+                    title="Xóa bài đăng sự kiện này"
+                  >
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+            {% endfor %}
+            {% if events|length == 0 %}
+              <tr>
+                <td colspan="6" class="px-5 py-12 text-center text-slate-400">
+                  <p class="font-medium text-slate-700 text-sm">Chưa có sự kiện nào được tạo</p>
+                  <p class="text-xs text-slate-400 mt-1">Bấm nút "Tạo Sự Kiện Mới" ở góc trên bên phải để bắt đầu phát hành vé.</p>
+                </td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: QUẢN LÝ NGƯỜI ĐĂNG KÝ THEO TỪNG SỰ KIỆN -->
+  <div id="tabContentAttendees" class="hidden space-y-6">
+
+    <!-- BỘ CHỌN SỰ KIỆN -->
+    <div class="bg-white rounded-md border border-slate-200/80 p-5 space-y-3 shadow-xs">
+      <div>
+        <label for="eventSelectBox" class="text-xs font-bold text-slate-900 uppercase tracking-wider block mb-1">
+          Chọn Sự Kiện Từ Danh Sách
+        </label>
+        <p class="text-[11px] text-slate-500">
+          Danh sách người tham dự và vé được phân tách riêng biệt theo từng sự kiện. Chọn sự kiện cần xem:
+        </p>
+      </div>
+
+      <div class="max-w-2xl w-full">
+        <select 
+          id="eventSelectBox" 
+          onchange="selectEventAttendees(this.value)"
+          class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 font-bold text-xs sm:text-sm text-slate-900 rounded-md focus:bg-white focus:border-indigo-600 focus:outline-none transition-colors cursor-pointer truncate"
+        >
+          {% if events|length > 0 %}
+            {% for ev in events %}
+              <option value="{{ ev.id }}" {% if loop.first %}selected{% endif %}>
+                #{{ ev.id }} - {{ ev.title }} ({{ ev.confirmed_orders|length }} đơn, {{ ev.total_sold }} vé)
+              </option>
+            {% endfor %}
+          {% else %}
+            <option value="" disabled selected>-- Chưa có sự kiện nào trong hệ thống --</option>
+          {% endif %}
+        </select>
+      </div>
+    </div>
+
+    {% if events|length == 0 %}
+      <div class="bg-white rounded-md border border-slate-200/80 p-10 text-center text-slate-500 shadow-xs space-y-2">
+        <svg class="w-10 h-10 text-slate-300 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+        </svg>
+        <p class="font-bold text-sm text-slate-800">Chưa Có Sự Kiện Nào Để Hiển Thị</p>
+        <p class="text-xs text-slate-500 max-w-md mx-auto">Hiện tại chưa có sự kiện nào được ghi nhận. Vui lòng bấm nút "Tạo Sự Kiện Mới" để phát hành vé và theo dõi danh sách người đăng ký.</p>
+      </div>
+    {% endif %}
+
+    <!-- CHI TIẾT NGƯỜI ĐĂNG KÝ THEO TỪNG SỰ KIỆN -->
+    {% for ev in events %}
+      <div 
+        id="panel-event-{{ ev.id }}" 
+        class="event-panel {% if not loop.first %}hidden{% endif %} space-y-5"
+      >
+        <!-- KHUNG TÓM TẮT SỰ KIỆN ĐANG CHỌN -->
+        <div class="bg-white rounded-md border border-slate-200/80 p-5 shadow-xs">
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="px-2 py-0.5 text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-md uppercase">
+                  Sự kiện #{{ ev.id }}
+                </span>
+                <span class="text-xs text-slate-500">{{ ev.location }}</span>
+              </div>
+              <h3 class="text-lg font-bold text-slate-900 tracking-tight">{{ ev.title }}</h3>
+              <p class="text-xs text-slate-500 mt-0.5">
+                Thời gian: <strong>{{ ev.start_time.strftime("%H:%M ngày %d/%m/%Y") }}</strong> &mdash; <strong>{{ ev.end_time.strftime("%H:%M ngày %d/%m/%Y") }}</strong>
+              </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <button 
+                type="button" 
+                onclick="exportEventAttendeesCsv('{{ ev.id }}')" 
+                class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold uppercase tracking-wider rounded-md shadow-xs transition flex items-center gap-1.5 cursor-pointer"
+                title="Xuất file Excel / CSV danh sách soát vé và đối soát điểm danh (Đã tham dự / Vắng mặt / Đã hủy) theo timeline"
+              >
+                <svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>Xuất File Soát Vé (Excel)</span>
+              </button>
+              <a href="/checkin-gate?event_id={{ ev.id }}" class="px-3.5 py-2 bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 text-xs font-bold uppercase tracking-wider rounded-md shadow-xs transition-colors flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Soát vé sự kiện này</span>
+              </a>
+              <a href="/events/{{ ev.id }}" target="_blank" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-md border border-slate-200 transition-colors inline-flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+                <span>Xem trang sự kiện</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- 4 KPI cards con của sự kiện -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 text-xs">
+            <div class="p-3 bg-slate-50 border border-slate-200 rounded-md">
+              <div class="text-[11px] text-slate-500 font-bold uppercase">Vé đã bán / Sức chứa</div>
+              <div class="text-lg font-bold text-slate-900 tabular-nums mt-0.5">{{ ev.total_sold }} / {{ ev.capacity }}</div>
+              <div class="text-[10px] text-slate-400">Tỷ lệ: {{ (ev.total_sold * 100 // ev.capacity) if ev.capacity else 0 }}%</div>
+            </div>
+            <div class="p-3 bg-slate-50 border border-slate-200 rounded-md">
+              <div class="text-[11px] text-slate-500 font-bold uppercase">Doanh thu sự kiện</div>
+              <div class="text-lg font-bold text-slate-900 tabular-nums mt-0.5">{{ "{:,.0f}".format(ev.total_revenue) }}đ</div>
+              <div class="text-[10px] text-slate-400">Thanh toán hoàn tất</div>
+            </div>
+            <div class="p-3 bg-slate-50 border border-slate-200 rounded-md">
+              <div class="text-[11px] text-slate-500 font-bold uppercase">Đã check-in tại cổng</div>
+              <div class="text-lg font-bold text-slate-900 tabular-nums mt-0.5">{{ ev.checked_in_count }} vé</div>
+              <div class="text-[10px] text-slate-400">Đã qua cổng vào</div>
+            </div>
+            <div class="p-3 bg-slate-50 border border-slate-200 rounded-md">
+              <div class="text-[11px] text-slate-500 font-bold uppercase">
+                {% if ev.is_ended %}Vắng mặt / Chưa check-in{% else %}Chưa check-in{% endif %}
+              </div>
+              <div class="text-lg font-bold text-slate-900 tabular-nums mt-0.5">
+                {{ (ev.total_sold - ev.checked_in_count) if ev.total_sold >= ev.checked_in_count else 0 }} vé
+              </div>
+              <div class="text-[10px] text-slate-400">
+                {% if ev.is_ended %}Sự kiện đã kết thúc{% else %}Vé chờ vào cổng{% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BẢNG DANH SÁCH NGƯỜI ĐĂNG KÝ -->
+        <div class="bg-white rounded-md border border-slate-200/80 shadow-xs overflow-hidden">
+          <div class="p-4 sm:p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <div class="flex items-center gap-2">
+                <h4 class="text-sm font-bold text-slate-900 uppercase tracking-wider">
+                  Danh Sách Người Tham Dự Đã Đặt Vé ({{ ev.confirmed_orders|length }} Đơn Hàng)
+                </h4>
+                <span class="px-2 py-0.5 text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-md">
+                  {{ ev.total_sold }} Vé phát hành
+                </span>
+              </div>
+              <p class="text-xs text-slate-500 mt-0.5">Toàn bộ danh sách đơn đặt vé thuộc riêng sự kiện "{{ ev.title }}". Xuất file Excel đối soát timeline điểm danh tự động.</p>
+            </div>
+
+            {% if ev.confirmed_orders|length > 0 %}
+              <div class="w-full sm:w-72">
+                <input 
+                  type="text" 
+                  placeholder="Tìm theo tên, email, mã đơn..." 
+                  onkeyup="filterAttendeeTable(this, 'table-attendees-{{ ev.id }}')"
+                  class="w-full px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-md text-xs text-slate-900 focus:bg-white focus:border-indigo-600 focus:outline-none transition-colors"
+                />
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- BANNER QUY TẮC ĐỐI SOÁT TIMELINE SOÁT VÉ -->
+          <div class="mx-5 my-3 p-3 bg-slate-50 border border-slate-200 rounded-md flex flex-col md:flex-row md:items-center justify-between gap-2.5 text-xs">
+            <div class="flex items-start gap-2">
+              <div class="w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center shrink-0 text-xs font-bold mt-0.5">ℹ</div>
+              <div>
+                <span class="font-bold text-slate-800">Quy chuẩn đối soát vé theo timeline sự kiện:</span>
+                <div class="text-[11px] text-slate-500 mt-0.5 flex flex-wrap gap-x-4 gap-y-1">
+                  <span>🟢 <strong class="text-emerald-700">Đã tham dự:</strong> Đã quét qua cổng (ghi nhận mốc giờ check-in)</span>
+                  <span>🟠 <strong class="text-amber-700">Vắng mặt:</strong> Hết thời gian soát vé (sự kiện kết thúc) mà chưa qua cổng</span>
+                  <span>⚪ <strong class="text-slate-700">Chờ check-in:</strong> Sự kiện chưa/đang diễn ra</span>
+                  <span>🔴 <strong class="text-rose-700">Đã hủy:</strong> Hoàn tiền trước sự kiện</span>
+                </div>
+              </div>
+            </div>
+            <div class="shrink-0 text-right">
+              <span class="text-[11px] text-slate-500">Định dạng xuất: <strong class="text-emerald-700">Excel (.XLSX) chuẩn có Dropdown</strong></span>
+            </div>
+          </div>
+
+          {% if ev.confirmed_orders|length > 0 %}
+            <div class="overflow-x-auto">
+              <table id="table-attendees-{{ ev.id }}" class="w-full text-left text-xs">
+                <thead class="bg-slate-50 text-slate-600 uppercase font-bold tracking-wider border-b border-slate-200 text-[11px]">
+                  <tr>
+                    <th class="px-5 py-3 whitespace-nowrap">STT</th>
+                    <th class="px-5 py-3 whitespace-nowrap">Mã đơn</th>
+                    <th class="px-5 py-3 min-w-[180px]">Người tham dự</th>
+                    <th class="px-5 py-3 whitespace-nowrap">Hạng vé</th>
+                    <th class="px-5 py-3 whitespace-nowrap">Số lượng</th>
+                    <th class="px-5 py-3 text-right whitespace-nowrap">Tổng tiền</th>
+                    <th class="px-5 py-3 whitespace-nowrap">Trạng thái soát vé</th>
+                    <th class="px-5 py-3 whitespace-nowrap">Thời gian đặt</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  {% for ord in ev.confirmed_orders %}
+                    <tr class="hover:bg-slate-50/80 transition attendee-row">
+                      <td class="px-5 py-3.5 text-slate-400 font-mono tabular-nums whitespace-nowrap stt-cell">{{ loop.index }}</td>
+                      <td class="px-5 py-3.5 font-mono font-bold text-indigo-700 whitespace-nowrap search-cell">
+                        {{ ord.order_code }}
+                      </td>
+                      <td class="px-5 py-3.5 search-cell">
+                        <div class="font-bold text-slate-900">{{ ord.user.full_name }}</div>
+                        <div class="text-[11px] text-slate-500 font-mono">{{ ord.user.email }}</div>
+                        {% if ord.user.phone_number %}
+                          <div class="text-[10px] text-slate-400 tabular-nums">SĐT: {{ ord.user.phone_number }}</div>
+                        {% endif %}
+                      </td>
+                      <td class="px-5 py-3.5 text-slate-700 whitespace-nowrap search-cell">
+                        <span class="font-semibold">{{ ord.tier.name }}</span>
+                      </td>
+                      <td class="px-5 py-3.5 tabular-nums font-bold text-slate-900 whitespace-nowrap">
+                        {{ ord.quantity }} vé
+                      </td>
+                      <td class="px-5 py-3.5 text-right font-mono font-bold text-slate-900 tabular-nums whitespace-nowrap">
+                        {{ "{:,.0f}".format(ord.final_amount) }}đ
+                      </td>
+                      <td class="px-5 py-3.5 whitespace-nowrap">
+                        {% set checked_in_tickets = ord.tickets | selectattr('status', 'equalto', 'CHECKED_IN') | list %}
+                        {% if checked_in_tickets|length == ord.tickets|length and ord.tickets|length > 0 %}
+                          <span class="px-2 py-0.5 text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-md whitespace-nowrap">
+                            ĐÃ SOÁT VÉ ({{ checked_in_tickets|length }}/{{ ord.tickets|length }})
+                          </span>
+                        {% elif checked_in_tickets|length > 0 %}
+                          <span class="px-2 py-0.5 text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200 rounded-md whitespace-nowrap">
+                            SOÁT {{ checked_in_tickets|length }}/{{ ord.tickets|length }} VÉ
+                          </span>
+                        {% else %}
+                          {% if ev.is_ended %}
+                            <span class="px-2 py-0.5 text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200 rounded-md whitespace-nowrap">
+                              QUÁ HẠN / VẮNG MẶT
+                            </span>
+                          {% else %}
+                            <span class="px-2 py-0.5 text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200 rounded-md whitespace-nowrap">
+                              CHƯA SOÁT VÉ
+                            </span>
+                          {% endif %}
+                        {% endif %}
+                        
+                        <!-- Hiển thị các mã vé con nếu có -->
+                        {% if ord.tickets %}
+                          <div class="mt-1.5 flex flex-wrap gap-1 max-w-[220px]">
+                            {% for tk in ord.tickets %}
+                              {% set is_absent = (tk.is_expired or ev.is_ended) and tk.status != 'CHECKED_IN' and tk.status != 'CANCELLED' %}
+                              <span 
+                                class="font-mono text-[10px] px-1.5 py-0.5 rounded border inline-flex items-center gap-1 {% if tk.status == 'CHECKED_IN' %}bg-emerald-50 text-emerald-700 border-emerald-300 font-bold{% elif tk.status == 'CANCELLED' %}bg-rose-50 text-rose-700 border-rose-300 line-through{% elif is_absent %}bg-amber-50 text-amber-700 border-amber-300 line-through{% else %}bg-slate-50 text-slate-600 border-slate-200{% endif %}" 
+                                title="Mã vé: {{ tk.ticket_code }} | Trạng thái: {% if tk.status == 'CHECKED_IN' %}ĐÃ THAM DỰ (Check-in: {{ tk.check_in_time.strftime('%H:%M:%S %d/%m/%Y') if tk.check_in_time else 'Đã qua cổng' }}){% elif tk.status == 'CANCELLED' %}ĐÃ HỦY VÉ{% elif is_absent %}VẮNG MẶT (Quá hạn){% else %}CHỜ CHECK-IN{% endif %}"
+                              >
+                                <span>{{ tk.ticket_code }}</span>
+                                {% if tk.status == 'CHECKED_IN' %}
+                                  <svg class="w-2.5 h-2.5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                                {% endif %}
+                              </span>
+                            {% endfor %}
+                          </div>
+                        {% endif %}
+                      </td>
+                      <td class="px-5 py-3.5 text-slate-500 tabular-nums whitespace-nowrap">
+                        {{ ord.created_at.strftime("%H:%M - %d/%m/%Y") }}
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+
+            <!-- PAGINATION BAR CHUẨN DESIGN THEO YÊU CẦU -->
+            <div id="pagination-bar-{{ ev.id }}" class="border-t border-slate-200 px-5 py-3.5 bg-white relative flex flex-col sm:flex-row items-center justify-center gap-3 text-xs">
+              <div class="sm:absolute sm:left-5 text-slate-500 font-mono text-[11px]" id="page-info-{{ ev.id }}">
+                Hiển thị <span class="font-bold text-slate-800" id="page-range-{{ ev.id }}">1 - 10</span> trên tổng số <span class="font-bold text-slate-800" id="total-count-{{ ev.id }}">{{ ev.confirmed_orders|length }}</span> đơn
+              </div>
+
+              <!-- Control pill container centered (nền trắng chữ đen) -->
+              <div class="flex items-center gap-2 select-none justify-center">
+                <!-- Nút Prev -->
+                <button 
+                  type="button"
+                  id="btn-prev-{{ ev.id }}"
+                  onclick="changeAttendeePage('{{ ev.id }}', -1)"
+                  class="w-8 h-8 rounded-md bg-white hover:bg-slate-50 active:scale-95 text-slate-800 border border-slate-300 flex items-center justify-center transition disabled:opacity-25 disabled:pointer-events-none cursor-pointer shadow-xs"
+                  title="Trang trước"
+                >
+                  <svg class="w-4 h-4 text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                  </svg>
+                </button>
+
+                <!-- Box chứa Trang [ X ] / Y -->
+                <div class="h-8 px-3.5 rounded-md bg-white border border-slate-300 text-slate-800 flex items-center gap-2 text-xs font-semibold shadow-xs">
+                  <span>Trang</span>
+                  <input 
+                    type="number"
+                    id="page-input-{{ ev.id }}"
+                    value="1"
+                    min="1"
+                    max="1"
+                    onchange="goToAttendeePage('{{ ev.id }}', this.value)"
+                    onkeydown="if(event.key==='Enter') { goToAttendeePage('{{ ev.id }}', this.value); this.blur(); }"
+                    class="w-10 h-5 text-center bg-slate-100 hover:bg-slate-50 border border-slate-300 rounded-md text-slate-900 font-bold text-xs focus:bg-white focus:outline-none focus:border-indigo-600 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  />
+                  <span>/ <span id="total-pages-{{ ev.id }}" class="font-bold text-slate-900">1</span></span>
+                </div>
+
+                <!-- Nút Next -->
+                <button 
+                  type="button"
+                  id="btn-next-{{ ev.id }}"
+                  onclick="changeAttendeePage('{{ ev.id }}', 1)"
+                  class="w-8 h-8 rounded-md bg-white hover:bg-slate-50 active:scale-95 text-slate-800 border border-slate-300 flex items-center justify-center transition disabled:opacity-25 disabled:pointer-events-none cursor-pointer shadow-xs"
+                  title="Trang sau"
+                >
+                  <svg class="w-4 h-4 text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          {% else %}
+            <!-- EMPTY STATE KHI CHƯA CÓ NGƯỜI ĐẶT VÉ -->
+            <div class="text-center py-14 px-4 space-y-3">
+              <div class="w-12 h-12 mx-auto rounded-md bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                </svg>
+              </div>
+              <h5 class="text-sm font-bold text-slate-800">Chưa Có Người Tham Dự Nào Đặt Vé</h5>
+              <p class="text-xs text-slate-500 max-w-md mx-auto">
+                Sự kiện này hiện chưa phát sinh đơn đặt vé nào. Khi người tham dự mua vé thành công, toàn bộ thông tin sẽ tự động hiển thị tại đây để bạn kiểm soát.
+              </p>
+              <div class="pt-2">
+                <a href="/events/{{ ev.id }}" target="_blank" class="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs uppercase tracking-wider rounded-md inline-flex items-center gap-2 shadow-xs transition-colors">
+                  <svg class="w-3.5 h-3.5 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                  <span>Xem trang sự kiện</span>
+                </a>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+
+  </div>
+
+</div>
+
+<!-- CREATE EVENT MODAL -->
+<div id="createModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center hidden p-4">
+  <div class="bg-white rounded-md max-w-2xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto border border-slate-300">
+    <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+      <div>
+        <h3 class="text-base font-bold text-slate-900 uppercase tracking-tight">Khởi Tạo Sự Kiện & Mở Bán Vé</h3>
+        <p class="text-xs text-slate-500">Hệ thống sẽ tự động thẩm định và phê duyệt mở bán ngay trên Trang chủ nếu đạt đủ các tiêu chuẩn.</p>
+      </div>
+      <button onclick="closeCreateModal()" class="text-slate-400 hover:text-slate-600 text-2xl leading-none">&times;</button>
+    </div>
+
+    <!-- KHU VỰC THÔNG BÁO LỖI KIỂM DUYỆT TỰ ĐỘNG -->
+    <div id="createEventErrorBox" class="hidden p-3.5 bg-rose-50 border border-rose-300 text-rose-800 text-xs space-y-2">
+      <div class="flex items-center gap-2 font-bold text-rose-900 text-xs uppercase tracking-wide">
+        <svg class="w-4 h-4 text-rose-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        <span>Chưa Thỏa Mãn Điều Kiện Tự Động Phê Duyệt</span>
+      </div>
+      <p class="text-[11px] text-rose-700">Vui lòng điều chỉnh các tiêu chí sau để sự kiện được tự động mở bán công khai:</p>
+      <ul id="createEventErrorList" class="list-disc list-inside space-y-1 text-rose-900 font-medium text-[11px]">
+      </ul>
+    </div>
+
+    <form onsubmit="handleCreateEvent(event)" class="space-y-3.5 text-xs">
+      <div>
+        <label class="font-bold text-slate-700 block mb-0.5 uppercase tracking-wider">
+          Tiêu đề sự kiện <span class="text-slate-400 font-normal normal-case">(Tối thiểu 10 ký tự, không viết hoa toàn bộ, không chứa từ khóa rác)</span>
+        </label>
+        <input type="text" id="evTitle" required class="w-full px-3 py-2 border border-slate-300 rounded-md bg-slate-50 focus:bg-white focus:border-indigo-600 focus:outline-none" placeholder="Ví dụ: Hội thảo Xu hướng Công nghệ AI & Điện toán Đám mây 2026">
+      </div>
+      <div>
+        <label class="font-bold text-slate-700 block mb-0.5 uppercase tracking-wider">
+          Mô tả chi tiết <span class="text-slate-400 font-normal normal-case">(Tối thiểu 30 ký tự nêu rõ nội dung, lịch trình, diễn giả)</span>
+        </label>
+        <textarea id="evDesc" rows="3" required class="w-full px-3 py-2 border border-slate-300 rounded-md bg-slate-50 focus:bg-white focus:border-indigo-600 focus:outline-none" placeholder="Giới thiệu chi tiết chương trình, các chuyên gia tham gia chia sẻ, quà tặng công nghệ và trải nghiệm thực tế cho người tham dự..."></textarea>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="font-bold text-slate-700 block mb-0.5 uppercase tracking-wider">
+            Địa điểm <span class="text-slate-400 font-normal normal-case">(Tối thiểu 8 ký tự)</span>
+          </label>
+          <input type="text" id="evLocation" required class="w-full px-3 py-2 border border-slate-300 rounded-md bg-slate-50 focus:bg-white focus:border-indigo-600 focus:outline-none" placeholder="Hội trường lớn A1, ĐHQG Hà Nội">
+        </div>
+        <div>
+          <label class="font-bold text-slate-700 block mb-0.5 uppercase tracking-wider">
+            Sức chứa tối đa <span class="text-slate-400 font-normal normal-case">(10 - 50.000 người)</span>
+          </label>
+          <input type="number" id="evCapacity" value="200" min="10" max="50000" class="w-full px-3 py-2 border border-slate-300 rounded-md bg-slate-50 focus:bg-white focus:border-indigo-600 focus:outline-none">
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="font-bold text-slate-700 block mb-0.5 uppercase tracking-wider">
+            Thời gian bắt đầu <span class="text-slate-400 font-normal normal-case">(Cách hiện tại ≥ 15 phút)</span>
+          </label>
+          <input type="datetime-local" id="evStart" required class="w-full px-3 py-2 border border-slate-300 rounded-md bg-slate-50 focus:bg-white focus:border-indigo-600 focus:outline-none">
+        </div>
+        <div>
+          <label class="font-bold text-slate-700 block mb-0.5 uppercase tracking-wider">
+            Thời gian kết thúc <span class="text-slate-400 font-normal normal-case">(Sau giờ bắt đầu ≥ 30 phút)</span>
+          </label>
+          <input type="datetime-local" id="evEnd" required class="w-full px-3 py-2 border border-slate-300 rounded-md bg-slate-50 focus:bg-white focus:border-indigo-600 focus:outline-none">
+        </div>
+      </div>
+
+      <!-- Tiers Setup -->
+      <div class="border-t border-slate-200 pt-3 space-y-2.5">
+        <div class="flex items-center justify-between gap-2">
+          <div>
+            <label class="font-bold text-slate-700 block uppercase tracking-wider text-xs">
+              Cấu hình Hạng vé Mở bán
+            </label>
+            <span class="text-slate-400 font-normal normal-case block text-[10px]">
+              (Giá vé ≥ 10.000đ hoặc 0đ nếu miễn phí. Nhấn nút dấu cộng để thêm hạng vé)
+            </span>
+          </div>
+          <button 
+            type="button" 
+            onclick="addTierRow()" 
+            class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold rounded-md flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
+            title="Thêm một hạng vé mới cho sự kiện này"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+            </svg>
+            <span>Thêm Hạng Vé</span>
+          </button>
+        </div>
+
+        <!-- DANH SÁCH CÁC HẠNG VÉ -->
+        <div id="tiersContainer" class="space-y-2">
+          <div class="tier-row grid grid-cols-12 gap-2 items-end bg-slate-50/80 p-2.5 border border-slate-200">
+            <div class="col-span-5">
+              <label class="text-[10px] text-slate-500 font-semibold block mb-0.5">Tên hạng vé</label>
+              <input type="text" class="tier-name w-full px-2.5 py-1.5 border border-slate-300 rounded-md bg-white focus:border-indigo-600 focus:outline-none" value="Vé Tiêu chuẩn" placeholder="Ví dụ: Vé Tiêu chuẩn, VIP..." required>
+            </div>
+            <div class="col-span-3">
+              <label class="text-[10px] text-slate-500 font-semibold block mb-0.5">Giá vé (VNĐ)</label>
+              <input type="number" class="tier-price w-full px-2.5 py-1.5 border border-slate-300 rounded-md bg-white focus:border-indigo-600 focus:outline-none" value="200000" min="0" placeholder="200000" required>
+            </div>
+            <div class="col-span-3">
+              <label class="text-[10px] text-slate-500 font-semibold block mb-0.5">Số lượng vé</label>
+              <input type="number" class="tier-qty w-full px-2.5 py-1.5 border border-slate-300 rounded-md bg-white focus:border-indigo-600 focus:outline-none" value="100" min="1" placeholder="100" required>
+            </div>
+            <div class="col-span-1 flex justify-end">
+              <button type="button" onclick="removeTierRow(this)" class="tier-delete-btn h-[32px] w-full flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-slate-200 transition-colors opacity-30 cursor-not-allowed" title="Xóa hạng vé này" disabled>
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+        <span class="text-[11px] text-slate-500">
+          Bằng việc đăng sự kiện, Ban tổ chức đồng ý với <a href="/quy-dinh-ban-ve" target="_blank" class="text-[#000080] underline font-bold hover:text-[#001B5E]">Chính sách phí sàn 5% & Quy định bán vé</a> của iTick.
+        </span>
+        <div class="flex items-center gap-2 shrink-0">
+          <button type="button" onclick="closeCreateModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-md text-slate-700 font-semibold transition-colors">Hủy</button>
+          <button type="submit" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-md font-bold uppercase tracking-wider transition-colors shadow-sm">Lưu & Đăng Sự Kiện</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- EDIT EVENT MODAL -->
+<div id="editModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center hidden p-4">
+  <div class="bg-white rounded-md max-w-2xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto border border-slate-300">
+    <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+      <div>
+        <h3 class="text-base font-bold text-slate-900 uppercase tracking-tight">Chỉnh Sửa Thông Tin Sự Kiện</h3>
+        <p class="text-xs text-slate-500">Cập nhật nội dung, thời gian hoặc cấu hình vé của sự kiện đã đăng</p>
+      </div>
+      <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600 text-2xl leading-none">&times;</button>
+    </div>
+
+    <!-- KHU VỰC THÔNG BÁO LỖI KIỂM DUYỆT TỰ ĐỘNG KHI SỬA -->
+    <div id="editEventErrorBox" class="hidden p-3.5 bg-rose-50 border border-rose-300 text-rose-800 text-xs space-y-2">
+      <div class="flex items-center gap-2 font-bold text-rose-900 text-xs uppercase tracking-wide">
+        <svg class="w-4 h-4 text-rose-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        <span>Chưa Thỏa Mãn Điều Kiện Kiểm Duyệt</span>
+      </div>
+      <p class="text-[11px] text-rose-700">Vui lòng điều chỉnh các tiêu chí sau để cập nhật bài đăng:</p>
+      <ul id="editEventErrorList" class="list-disc list-inside space-y-1 text-rose-900 font-medium text-[11px]">
+      </ul>
+    </div>
+
+    <form onsubmit="handleUpdateEvent(event)" class="space-y-3.5 text-xs">
+      <input type="hidden" id="editEvId">
+      <div>
+        <label class="font-bold text-slate-700 block mb-0.5 uppercase tracking-wider">
+          Tiêu đề sự kiện <span class="text-slate-400 font-normal normal-case">(Tối thiểu 10 ký tự, không viết hoa toàn bộ)</span>
+        </label>
+        <input type="text" id="editEvTitle" required class="w-full px-3 py-2 border border-slate-300 rounded-md bg-slate-50 focus:bg-white focus:border-indigo-600 focus:outline-none">
+      </div>
+      <div>
+        <label class="font-bold text-slate-700 block mb-0.5 uppercase tracking-wider">
+          Mô tả chi tiết <span class="text-slate-400 font-normal normal-case">(Tối thiểu 30 ký tự)</span>
+        </label>
+        <textarea id="editEvDesc" rows="3" required class="w-full px-3 py-2 border border-slate-300 rounded-md bg-slate-50 focus:bg-white focus:border-indigo-600 focus:outline-none"></textarea>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="font-bold text-slate-700 block mb-0.5 uppercase tracking-wider">
+            Địa điểm <span class="text-slate-400 font-normal normal-case">(Tối thiểu 8 ký tự)</span>
+          </label>
+          <input type="text" id="editEvLocation" required class="w-full px-3 py-2 border border-slate-300 rounded-md bg-slate-50 focus:bg-white focus:border-indigo-600 focus:outline-none">
+        </div>
+        <div>
+          <label class="font-bold text-slate-700 block mb-0.5 uppercase tracking-wider">
+            Sức chứa tối đa <span class="text-slate-400 font-normal normal-case">(10 - 50.000 người)</span>
+          </label>
+          <input type="number" id="editEvCapacity" required min="10" max="50000" class="w-full px-3 py-2 border border-slate-300 rounded-md bg-slate-50 focus:bg-white focus:border-indigo-600 focus:outline-none">
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="font-bold text-slate-700 block mb-0.5 uppercase tracking-wider">
+            Thời gian bắt đầu <span class="text-slate-400 font-normal normal-case">(Cách hiện tại ≥ 15 phút)</span>
+          </label>
+          <input type="datetime-local" id="editEvStart" required class="w-full px-3 py-2 border border-slate-300 rounded-md bg-slate-50 focus:bg-white focus:border-indigo-600 focus:outline-none">
+        </div>
+        <div>
+          <label class="font-bold text-slate-700 block mb-0.5 uppercase tracking-wider">
+            Thời gian kết thúc <span class="text-slate-400 font-normal normal-case">(Sau giờ bắt đầu ≥ 30 phút)</span>
+          </label>
+          <input type="datetime-local" id="editEvEnd" required class="w-full px-3 py-2 border border-slate-300 rounded-md bg-slate-50 focus:bg-white focus:border-indigo-600 focus:outline-none">
+        </div>
+      </div>
+
+      <!-- Tiers Setup for Edit -->
+      <div class="border-t border-slate-200 pt-3 space-y-2.5">
+        <div class="flex items-center justify-between gap-2">
+          <div>
+            <label class="font-bold text-slate-700 block uppercase tracking-wider text-xs">
+              Cấu hình Hạng vé Mở bán
+            </label>
+            <span class="text-slate-400 font-normal normal-case block text-[10px]">
+              (Giá vé ≥ 10.000đ hoặc 0đ nếu miễn phí)
+            </span>
+          </div>
+          <button 
+            type="button" 
+            onclick="addEditTierRow()" 
+            class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold rounded-md flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
+            title="Thêm một hạng vé mới cho sự kiện này"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+            </svg>
+            <span>Thêm Hạng Vé</span>
+          </button>
+        </div>
+
+        <div id="editTiersContainer" class="space-y-2">
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-slate-200 flex justify-end gap-2">
+        <button type="button" onclick="closeEditModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-md text-slate-700 font-semibold transition-colors">Hủy</button>
+        <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md font-bold uppercase tracking-wider transition-colors shadow-sm">Lưu Thay Đổi</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  // Chuyển đổi tab chính (Tab 1: Danh Sách Sự Kiện, Tab 2: Người Đăng Ký)
+  function switchMainTab(tab) {
+    const tabEvents = document.getElementById('tabContentEvents');
+    const tabAttendees = document.getElementById('tabContentAttendees');
+    const btnEvents = document.getElementById('tabBtnEvents');
+    const btnAttendees = document.getElementById('tabBtnAttendees');
+
+    if (tab === 'events') {
+      tabEvents.classList.remove('hidden');
+      tabAttendees.classList.add('hidden');
+      btnEvents.className = "py-3.5 px-3 border-b-2 border-indigo-600 text-indigo-600 flex items-center gap-2 transition-colors cursor-pointer font-bold";
+      btnAttendees.className = "py-3.5 px-3 border-b-2 border-transparent text-slate-500 hover:text-slate-900 flex items-center gap-2 transition-colors cursor-pointer font-bold";
+    } else {
+      tabEvents.classList.add('hidden');
+      tabAttendees.classList.remove('hidden');
+      btnEvents.className = "py-3.5 px-3 border-b-2 border-transparent text-slate-500 hover:text-slate-900 flex items-center gap-2 transition-colors cursor-pointer font-bold";
+      btnAttendees.className = "py-3.5 px-3 border-b-2 border-indigo-600 text-indigo-600 flex items-center gap-2 transition-colors cursor-pointer font-bold";
+    }
+  }
+
+  // Chọn sự kiện trong Tab Người Đăng Ký
+  function selectEventAttendees(eventId) {
+    // Cập nhật select box
+    const selectBox = document.getElementById('eventSelectBox');
+    if (selectBox) selectBox.value = eventId;
+
+    // Ẩn tất cả panels và hiện panel được chọn
+    const panels = document.querySelectorAll('.event-panel');
+    panels.forEach(p => p.classList.add('hidden'));
+
+    const targetPanel = document.getElementById('panel-event-' + eventId);
+    if (targetPanel) {
+      targetPanel.classList.remove('hidden');
+      renderAttendeePage(eventId);
+    }
+  }
+
+  // Nút tắt từ Tab 1 nhảy sang Tab 2 và tự chọn sự kiện đó
+  function showAttendeesForEvent(eventId) {
+    switchMainTab('attendees');
+    selectEventAttendees(eventId);
+    window.scrollTo({ top: 380, behavior: 'smooth' });
+  }
+
+  // --- HỆ THỐNG PHÂN TRANG & TÌM KIẾM NGƯỜI THAM DỰ (TỐI ĐA 10 DÒNG/TRANG) ---
+  const ATTENDEE_PAGE_SIZE = 10;
+  const attendeePaginationState = {}; // { [eventId]: { currentPage: 1, filterQuery: '' } }
+
+  function getAttendeeEventState(eventId) {
+    if (!attendeePaginationState[eventId]) {
+      attendeePaginationState[eventId] = {
+        currentPage: 1,
+        filterQuery: ''
+      };
+    }
+    return attendeePaginationState[eventId];
+  }
+
+  function renderAttendeePage(eventId) {
+    const table = document.getElementById('table-attendees-' + eventId);
+    if (!table) return;
+
+    const state = getAttendeeEventState(eventId);
+    const allRows = Array.from(table.getElementsByClassName('attendee-row'));
+
+    // Lọc các hàng khớp với từ khóa tìm kiếm
+    const matchingRows = allRows.filter(row => {
+      if (!state.filterQuery) return true;
+      const text = row.innerText.toLowerCase();
+      return text.includes(state.filterQuery);
+    });
+
+    const totalItems = matchingRows.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / ATTENDEE_PAGE_SIZE));
+
+    // Giới hạn trang hợp lệ
+    if (state.currentPage > totalPages) state.currentPage = totalPages;
+    if (state.currentPage < 1) state.currentPage = 1;
+
+    const startIndex = (state.currentPage - 1) * ATTENDEE_PAGE_SIZE;
+    const endIndex = Math.min(startIndex + ATTENDEE_PAGE_SIZE, totalItems);
+
+    // Ẩn tất cả hàng trước
+    allRows.forEach(row => {
+      row.style.display = 'none';
+    });
+
+    // Chỉ hiển thị các dòng thuộc trang hiện tại và đánh số STT chuẩn xác
+    matchingRows.forEach((row, idx) => {
+      if (idx >= startIndex && idx < endIndex) {
+        row.style.display = '';
+        const sttCell = row.querySelector('.stt-cell');
+        if (sttCell) {
+          sttCell.textContent = (idx + 1);
+        }
+      } else {
+        row.style.display = 'none';
+      }
+    });
+
+    // Cập nhật các phần tử điều khiển giao diện
+    const pageInput = document.getElementById('page-input-' + eventId);
+    if (pageInput) {
+      pageInput.value = state.currentPage;
+      pageInput.max = totalPages;
+    }
+
+    const totalPagesEl = document.getElementById('total-pages-' + eventId);
+    if (totalPagesEl) {
+      totalPagesEl.textContent = totalPages;
+    }
+
+    const btnPrev = document.getElementById('btn-prev-' + eventId);
+    if (btnPrev) {
+      btnPrev.disabled = (state.currentPage <= 1);
+    }
+
+    const btnNext = document.getElementById('btn-next-' + eventId);
+    if (btnNext) {
+      btnNext.disabled = (state.currentPage >= totalPages);
+    }
+
+    const pageRangeEl = document.getElementById('page-range-' + eventId);
+    if (pageRangeEl) {
+      pageRangeEl.textContent = totalItems > 0 ? `${startIndex + 1} - ${endIndex}` : '0 - 0';
+    }
+
+    const totalCountEl = document.getElementById('total-count-' + eventId);
+    if (totalCountEl) {
+      totalCountEl.textContent = totalItems;
+    }
+
+    const paginationBar = document.getElementById('pagination-bar-' + eventId);
+    if (paginationBar) {
+      paginationBar.style.display = totalItems === 0 ? 'none' : 'flex';
+    }
+  }
+
+  function changeAttendeePage(eventId, delta) {
+    const state = getAttendeeEventState(eventId);
+    state.currentPage += delta;
+    renderAttendeePage(eventId);
+  }
+
+  function goToAttendeePage(eventId, pageStr) {
+    const state = getAttendeeEventState(eventId);
+    let page = parseInt(pageStr, 10);
+    if (isNaN(page)) page = 1;
+    state.currentPage = page;
+    renderAttendeePage(eventId);
+  }
+
+  // Lọc bảng người tham dự theo từ khóa tìm kiếm (tên, email, mã đơn...)
+  function filterAttendeeTable(input, target) {
+    let eventId = target;
+    if (typeof target === 'string') {
+      eventId = target.replace('table-attendees-', '');
+    }
+    const state = getAttendeeEventState(eventId);
+    state.filterQuery = input.value.toLowerCase().trim();
+    state.currentPage = 1; // Reset về trang đầu tiên khi gõ từ khóa tìm kiếm
+    renderAttendeePage(eventId);
+  }
+
+  // Khởi tạo phân trang ngay khi DOM tải xong
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('[id^="table-attendees-"]').forEach(tbl => {
+      const evId = tbl.id.replace('table-attendees-', '');
+      renderAttendeePage(evId);
+    });
+    updateTierDeleteButtons();
+  });
+
+  function addTierRow(defaultName = '', defaultPrice = '', defaultQty = '') {
+    const container = document.getElementById('tiersContainer');
+    if (!container) return;
+    const currentCount = container.querySelectorAll('.tier-row').length;
+    const suggestedName = defaultName || (currentCount === 1 ? 'Vé VIP All-Access' : (currentCount === 2 ? 'Vé Early Bird' : `Hạng vé ${currentCount + 1}`));
+    const suggestedPrice = defaultPrice !== '' ? defaultPrice : (currentCount === 1 ? '500000' : '150000');
+    const suggestedQty = defaultQty !== '' ? defaultQty : '50';
+
+    const div = document.createElement('div');
+    div.className = 'tier-row grid grid-cols-12 gap-2 items-end bg-slate-50/80 p-2.5 border border-slate-200';
+    div.innerHTML = `
+      <div class="col-span-5">
+        <label class="text-[10px] text-slate-500 font-semibold block mb-0.5">Tên hạng vé</label>
+        <input type="text" class="tier-name w-full px-2.5 py-1.5 border border-slate-300 rounded-md bg-white focus:outline-none focus:border-indigo-600" value="${suggestedName}" placeholder="Ví dụ: Vé VIP..." required>
+      </div>
+      <div class="col-span-3">
+        <label class="text-[10px] text-slate-500 font-semibold block mb-0.5">Giá vé (VNĐ)</label>
+        <input type="number" class="tier-price w-full px-2.5 py-1.5 border border-slate-300 rounded-md bg-white focus:outline-none focus:border-indigo-600" value="${suggestedPrice}" min="0" placeholder="0" required>
+      </div>
+      <div class="col-span-3">
+        <label class="text-[10px] text-slate-500 font-semibold block mb-0.5">Số lượng vé</label>
+        <input type="number" class="tier-qty w-full px-2.5 py-1.5 border border-slate-300 rounded-md bg-white focus:outline-none focus:border-indigo-600" value="${suggestedQty}" min="1" placeholder="50" required>
+      </div>
+      <div class="col-span-1 flex justify-end">
+        <button type="button" onclick="removeTierRow(this)" class="tier-delete-btn h-[32px] w-full flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-slate-200 transition-colors" title="Xóa hạng vé này">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </button>
+      </div>
+    `;
+    container.appendChild(div);
+    updateTierDeleteButtons();
+  }
+
+  function removeTierRow(btn) {
+    const container = document.getElementById('tiersContainer');
+    const rows = container.querySelectorAll('.tier-row');
+    if (rows.length <= 1) {
+      alert("Sự kiện cần tối thiểu một hạng vé mở bán.");
+      return;
+    }
+    const row = btn.closest('.tier-row');
+    if (row) row.remove();
+    updateTierDeleteButtons();
+  }
+
+  function updateTierDeleteButtons() {
+    const container = document.getElementById('tiersContainer');
+    if (!container) return;
+    const rows = container.querySelectorAll('.tier-row');
+    rows.forEach(r => {
+      const delBtn = r.querySelector('.tier-delete-btn');
+      if (delBtn) {
+        if (rows.length <= 1) {
+          delBtn.classList.add('opacity-30', 'cursor-not-allowed');
+          delBtn.disabled = true;
+        } else {
+          delBtn.classList.remove('opacity-30', 'cursor-not-allowed');
+          delBtn.disabled = false;
+        }
+      }
+    });
+  }
+
+  function openCreateModal() { 
+    const errBox = document.getElementById('createEventErrorBox');
+    if (errBox) errBox.classList.add('hidden');
+    document.getElementById('createModal').classList.remove('hidden'); 
+    updateTierDeleteButtons();
+  }
+  function closeCreateModal() { 
+    const errBox = document.getElementById('createEventErrorBox');
+    if (errBox) errBox.classList.add('hidden');
+    document.getElementById('createModal').classList.add('hidden'); 
+  }
+
+  async function handleCreateEvent(e) {
+    e.preventDefault();
+    const errBox = document.getElementById('createEventErrorBox');
+    const errList = document.getElementById('createEventErrorList');
+    if (errBox) errBox.classList.add('hidden');
+    if (errList) errList.innerHTML = '';
+
+    const startVal = document.getElementById('evStart').value;
+    const endVal = document.getElementById('evEnd').value;
+    if (!startVal || !endVal) {
+      alert("Vui lòng chọn thời gian bắt đầu và kết thúc sự kiện");
+      return;
+    }
+
+    // Thu thập tất cả hạng vé từ giao diện
+    const tierRows = document.querySelectorAll('#tiersContainer .tier-row');
+    const tiers = [];
+    tierRows.forEach(row => {
+      const name = (row.querySelector('.tier-name')?.value || '').trim();
+      const price = parseFloat(row.querySelector('.tier-price')?.value) || 0;
+      const qty = parseInt(row.querySelector('.tier-qty')?.value) || 0;
+      if (name) {
+        tiers.push({
+          name: name,
+          price: price,
+          total_quantity: qty
+        });
+      }
+    });
+
+    if (tiers.length === 0) {
+      alert("Vui lòng nhập ít nhất một hạng vé mở bán");
+      return;
+    }
+
+    const payload = {
+      title: document.getElementById('evTitle').value.trim(),
+      description: document.getElementById('evDesc').value.trim(),
+      location: document.getElementById('evLocation').value.trim(),
+      capacity: parseInt(document.getElementById('evCapacity').value),
+      start_time: new Date(startVal).toISOString(),
+      end_time: new Date(endVal).toISOString(),
+      category: "TECHNOLOGY",
+      tiers: tiers
+    };
+
+    try {
+      const res = await fetch('/api/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert("🎉 Chúc mừng! Sự kiện đã đáp ứng đủ các tiêu chuẩn kiểm duyệt tự động và đang được MỞ BÁN CÔNG KHAI ngay trên Trang chủ!");
+        window.location.reload();
+      } else {
+        // Trích xuất danh sách lý do vi phạm từ backend
+        let violations = [];
+        if (data.detail && typeof data.detail === 'object') {
+          if (Array.isArray(data.detail.violations)) {
+            violations = data.detail.violations;
+          } else if (data.detail.message) {
+            violations = [data.detail.message];
+          }
+        } else if (typeof data.detail === 'string') {
+          violations = [data.detail];
+        } else {
+          violations = ["Không thể tạo sự kiện. Vui lòng kiểm tra lại thông tin."];
+        }
+
+        if (errBox && errList) {
+          errList.innerHTML = '';
+          violations.forEach(v => {
+            const li = document.createElement('li');
+            li.textContent = v;
+            errList.appendChild(li);
+          });
+          errBox.classList.remove('hidden');
+          const modalContent = document.getElementById('createModal').firstElementChild;
+          if (modalContent) modalContent.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          alert("Lỗi kiểm duyệt tự động:\n- " + violations.join("\n- "));
+        }
+      }
+    } catch (err) {
+      alert("Lỗi kết nối máy chủ: " + err.message);
+    }
+  }
+
+  // --- CHỨC NĂNG CHỈNH SỬA & XÓA BÀI ĐĂNG SỰ KIỆN ---
+  async function openEditModal(eventId) {
+    const errBox = document.getElementById('editEventErrorBox');
+    const errList = document.getElementById('editEventErrorList');
+    if (errBox) errBox.classList.add('hidden');
+    if (errList) errList.innerHTML = '';
+    
+    try {
+      const res = await fetch(`/api/events/${eventId}`);
+      if (!res.ok) {
+        alert("Không thể tải thông tin sự kiện này");
+        return;
+      }
+      const ev = await res.json();
+      
+      document.getElementById('editEvId').value = ev.id;
+      document.getElementById('editEvTitle').value = ev.title;
+      document.getElementById('editEvDesc').value = ev.description;
+      document.getElementById('editEvLocation').value = ev.location;
+      document.getElementById('editEvCapacity').value = ev.capacity;
+      
+      if (ev.start_time) {
+        const st = new Date(ev.start_time);
+        st.setMinutes(st.getMinutes() - st.getTimezoneOffset());
+        document.getElementById('editEvStart').value = st.toISOString().slice(0, 16);
+      }
+      if (ev.end_time) {
+        const et = new Date(ev.end_time);
+        et.setMinutes(et.getMinutes() - et.getTimezoneOffset());
+        document.getElementById('editEvEnd').value = et.toISOString().slice(0, 16);
+      }
+      
+      const container = document.getElementById('editTiersContainer');
+      container.innerHTML = '';
+      if (ev.tiers && ev.tiers.length > 0) {
+        ev.tiers.forEach(t => {
+          addEditTierRow(t.name, t.price, t.total_quantity);
+        });
+      } else {
+        addEditTierRow('Vé Tiêu chuẩn', 200000, 100);
+      }
+      
+      document.getElementById('editModal').classList.remove('hidden');
+      updateEditTierDeleteButtons();
+    } catch (err) {
+      alert("Lỗi kết nối khi tải sự kiện: " + err.message);
+    }
+  }
+
+  function closeEditModal() {
+    document.getElementById('editModal').classList.add('hidden');
+  }
+
+  function addEditTierRow(name = '', price = 100000, qty = 50) {
+    const container = document.getElementById('editTiersContainer');
+    if (!container) return;
+    const currentCount = container.querySelectorAll('.edit-tier-row').length;
+    const defaultName = name || (currentCount === 0 ? 'Vé Tiêu chuẩn' : (currentCount === 1 ? 'Vé VIP All-Access' : `Hạng vé ${currentCount + 1}`));
+    const div = document.createElement('div');
+    div.className = 'edit-tier-row grid grid-cols-12 gap-2 items-end bg-slate-50/80 p-2.5 border border-slate-200';
+    div.innerHTML = `
+      <div class="col-span-5">
+        <label class="text-[10px] text-slate-500 font-semibold block mb-0.5">Tên hạng vé</label>
+        <input type="text" class="edit-tier-name w-full px-2.5 py-1.5 border border-slate-300 rounded-md bg-white focus:outline-none focus:border-indigo-600" value="${defaultName}" placeholder="Ví dụ: Vé VIP" required>
+      </div>
+      <div class="col-span-3">
+        <label class="text-[10px] text-slate-500 font-semibold block mb-0.5">Giá vé (VNĐ)</label>
+        <input type="number" class="edit-tier-price w-full px-2.5 py-1.5 border border-slate-300 rounded-md bg-white focus:outline-none focus:border-indigo-600" value="${price}" min="0" required>
+      </div>
+      <div class="col-span-3">
+        <label class="text-[10px] text-slate-500 font-semibold block mb-0.5">Số lượng vé</label>
+        <input type="number" class="edit-tier-qty w-full px-2.5 py-1.5 border border-slate-300 rounded-md bg-white focus:outline-none focus:border-indigo-600" value="${qty}" min="1" required>
+      </div>
+      <div class="col-span-1 flex justify-end">
+        <button type="button" onclick="removeEditTierRow(this)" class="edit-tier-delete-btn h-[32px] w-full flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-slate-200 transition-colors" title="Xóa hạng vé này">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </button>
+      </div>
+    `;
+    container.appendChild(div);
+    updateEditTierDeleteButtons();
+  }
+
+  function removeEditTierRow(btn) {
+    const container = document.getElementById('editTiersContainer');
+    const rows = container.querySelectorAll('.edit-tier-row');
+    if (rows.length <= 1) {
+      alert("Sự kiện cần tối thiểu một hạng vé.");
+      return;
+    }
+    const row = btn.closest('.edit-tier-row');
+    if (row) row.remove();
+    updateEditTierDeleteButtons();
+  }
+
+  function updateEditTierDeleteButtons() {
+    const container = document.getElementById('editTiersContainer');
+    if (!container) return;
+    const rows = container.querySelectorAll('.edit-tier-row');
+    rows.forEach(r => {
+      const delBtn = r.querySelector('.edit-tier-delete-btn');
+      if (delBtn) {
+        if (rows.length <= 1) {
+          delBtn.classList.add('opacity-30', 'cursor-not-allowed');
+          delBtn.disabled = true;
+        } else {
+          delBtn.classList.remove('opacity-30', 'cursor-not-allowed');
+          delBtn.disabled = false;
+        }
+      }
+    });
+  }
+
+  async function handleUpdateEvent(e) {
+    e.preventDefault();
+    const eventId = document.getElementById('editEvId').value;
+    const errBox = document.getElementById('editEventErrorBox');
+    const errList = document.getElementById('editEventErrorList');
+    if (errBox) errBox.classList.add('hidden');
+    if (errList) errList.innerHTML = '';
+
+    const startVal = document.getElementById('editEvStart').value;
+    const endVal = document.getElementById('editEvEnd').value;
+    if (!startVal || !endVal) {
+      alert("Vui lòng chọn thời gian bắt đầu và kết thúc sự kiện");
+      return;
+    }
+
+    const tierRows = document.querySelectorAll('#editTiersContainer .edit-tier-row');
+    const tiers = [];
+    tierRows.forEach(row => {
+      const name = (row.querySelector('.edit-tier-name')?.value || '').trim();
+      const price = parseFloat(row.querySelector('.edit-tier-price')?.value) || 0;
+      const qty = parseInt(row.querySelector('.edit-tier-qty')?.value) || 0;
+      if (name) {
+        tiers.push({ name, price, total_quantity: qty });
+      }
+    });
+
+    if (tiers.length === 0) {
+      alert("Vui lòng cấu hình ít nhất một hạng vé");
+      return;
+    }
+
+    const payload = {
+      title: document.getElementById('editEvTitle').value.trim(),
+      description: document.getElementById('editEvDesc').value.trim(),
+      location: document.getElementById('editEvLocation').value.trim(),
+      capacity: parseInt(document.getElementById('editEvCapacity').value),
+      start_time: new Date(startVal).toISOString(),
+      end_time: new Date(endVal).toISOString(),
+      category: "TECHNOLOGY",
+      tiers: tiers
+    };
+
+    try {
+      const res = await fetch(`/api/events/${eventId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert("🎉 Cập nhật thông tin sự kiện thành công!");
+        window.location.reload();
+      } else {
+        let violations = [];
+        if (data.detail && typeof data.detail === 'object') {
+          if (Array.isArray(data.detail.violations)) {
+            violations = data.detail.violations;
+          } else if (data.detail.message) {
+            violations = [data.detail.message];
+          }
+        } else if (typeof data.detail === 'string') {
+          violations = [data.detail];
+        } else {
+          violations = ["Không thể cập nhật sự kiện. Vui lòng kiểm tra lại thông tin."];
+        }
+
+        if (errBox && errList) {
+          errList.innerHTML = '';
+          violations.forEach(v => {
+            const li = document.createElement('li');
+            li.textContent = v;
+            errList.appendChild(li);
+          });
+          errBox.classList.remove('hidden');
+          const modalContent = document.getElementById('editModal').firstElementChild;
+          if (modalContent) modalContent.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          alert("Lỗi kiểm duyệt khi cập nhật:\n- " + violations.join("\n- "));
+        }
+      }
+    } catch (err) {
+      alert("Lỗi kết nối máy chủ: " + err.message);
+    }
+  }
+
+  async function confirmDeleteEvent(eventId, eventTitle) {
+    const ok = confirm(`Bạn có chắc chắn muốn xóa bài đăng sự kiện:\n"${eventTitle}"\n\nLưu ý: Hành động này sẽ xóa sự kiện và toàn bộ dữ liệu liên quan. Không thể hoàn tác!`);
+    if (!ok) return;
+
+    try {
+      const res = await fetch(`/api/events/${eventId}`, {
+        method: 'DELETE'
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert("🗑️ " + (data.message || "Đã xóa sự kiện thành công!"));
+        window.location.reload();
+      } else {
+        alert("Lỗi xóa sự kiện: " + (data.detail || "Không thể xóa sự kiện này"));
+      }
+    } catch (err) {
+      alert("Lỗi kết nối máy chủ: " + err.message);
+    }
+  }
+
+  // --- CHỨC NĂNG XUẤT FILE EXCEL / CSV DANH SÁCH SOÁT VÉ VÀ ĐỐI SOÁT ĐIỂM DANH ---
+  function exportEventAttendeesCsv(eventId) {
+    if (!eventId) {
+      alert("Vui lòng chọn sự kiện cần xuất file soát vé!");
+      return;
+    }
+    const exportUrl = `/api/events/${eventId}/export-attendees?format=xlsx`;
+    
+    // Kích hoạt tải xuống tự động file Excel (.xlsx) chuẩn định dạng
+    const link = document.createElement('a');
+    link.href = exportUrl;
+    link.setAttribute('download', '');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  function exportCurrentSelectedEventAttendees() {
+    const selectBox = document.getElementById('eventSelectBox');
+    const eventId = selectBox ? selectBox.value : null;
+    if (!eventId) {
+      alert("Không tìm thấy sự kiện nào được chọn trong danh sách.");
+      return;
+    }
+    exportEventAttendeesCsv(eventId);
+  }
+</script>
+{% endblock %}

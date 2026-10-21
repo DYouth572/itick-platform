@@ -1,0 +1,590 @@
+{% extends "base.html" %}
+
+{% block title %}Máy Soát Vé Tại Cổng - iTick{% endblock %}
+
+{% block extra_head %}
+<!-- Tải thư viện quét Camera QR Code & Barcode cục bộ (Fallback CDN) -->
+<script src="/static/js/html5-qrcode.min.js"></script>
+<script>
+  if (typeof Html5Qrcode === 'undefined') {
+    document.write('<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"><\/script>');
+  }
+</script>
+<style>
+  /* Hiệu ứng tia Laser quét chuyển động trên Camera */
+  @keyframes scanLaser {
+    0% { top: 6%; opacity: 0.8; }
+    50% { top: 92%; opacity: 1; }
+    100% { top: 6%; opacity: 0.8; }
+  }
+  .laser-beam {
+    position: absolute;
+    left: 8%;
+    right: 8%;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #22c55e, #38bdf8, #22c55e, transparent);
+    box-shadow: 0 0 12px 2px rgba(34, 197, 94, 0.8);
+    animation: scanLaser 2.2s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 20;
+  }
+  /* Căn chỉnh khung video của html5-qrcode */
+  #qr-reader {
+    border: none !important;
+    width: 100% !important;
+  }
+  #qr-reader video {
+    width: 100% !important;
+    height: auto !important;
+    border-radius: 0.375rem;
+    object-fit: cover;
+  }
+  #qr-reader__scan_region {
+    background: rgba(0, 0, 0, 0.2);
+  }
+  #qr-reader__dashboard {
+    display: none !important;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-6 sm:py-8 space-y-5">
+
+  <!-- TOP BAR: HEADER & EVENT SELECTOR -->
+  <div class="bg-white/95 dark:bg-slate-900/90 backdrop-blur-sm rounded-md border border-slate-200/80 dark:border-slate-800 p-5 shadow-xs transition-colors space-y-4">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <div class="inline-flex items-center text-xs font-bold text-[#000080] dark:text-sky-400 uppercase tracking-wider mb-1">
+          <span>Cổng Soát Vé Trực Tuyến (Gate Check-in Station)</span>
+        </div>
+        <h1 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Máy Xác Thực Vé Tại Cổng</h1>
+      </div>
+
+      <!-- Quick Audio & Mode Controls -->
+      <div class="flex items-center gap-2 shrink-0">
+        <label class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-md text-xs font-semibold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 cursor-pointer">
+          <input type="checkbox" id="soundToggle" checked class="w-3.5 h-3.5 text-[#000080] rounded" />
+          <span>Âm thanh Bíp</span>
+        </label>
+        <a href="/organizer" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-md border border-slate-200 dark:border-slate-700 transition-colors inline-flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          </svg>
+          <span>Quản Lý Sự Kiện</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Event Selector & Live Counter -->
+    <div class="pt-3 border-t border-slate-100 dark:border-slate-800 grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
+      <div class="md:col-span-2">
+        <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
+          Chọn Sự Kiện Soát Vé:
+        </label>
+        <select 
+          id="eventSelect" 
+          onchange="switchEvent(this.value)"
+          class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-md text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#000080]"
+        >
+          {% for ev in events %}
+            <option value="{{ ev.id }}" {% if ev.id == current_event_id %}selected{% endif %}>
+              #{{ ev.id }} - {{ ev.title }} ({{ ev.location }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Live Counter Badge -->
+      <div class="p-2.5 bg-blue-50/70 dark:bg-[#000080]/20 rounded-md border border-blue-100 dark:border-blue-900/40 text-center">
+        <div class="text-[10px] font-bold text-[#000080] dark:text-sky-300 uppercase tracking-wider">Tiến Độ Vào Cổng</div>
+        <div class="text-base font-extrabold font-mono text-slate-900 dark:text-white mt-0.5">
+          <span id="checkedCount">{{ checked_in_tickets }}</span> / <span id="totalCount">{{ total_tickets }}</span> vé
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DUAL TAB SWITCHER: CAMERA SCANNER vs SÚNG MÃ VẠCH / NHẬP TAY -->
+  <div class="flex p-1 bg-slate-200/80 dark:bg-slate-800 rounded-md text-xs font-bold border border-slate-300/80 dark:border-slate-700">
+    <button 
+      type="button" 
+      id="tabBtnCamera" 
+      onclick="switchScannerTab('camera')" 
+      class="flex-1 py-2 px-3 rounded-md bg-white dark:bg-slate-900 text-[#000080] dark:text-sky-300 shadow-xs flex items-center justify-center gap-2 cursor-pointer transition-all"
+    >
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+      </svg>
+      <span>1. Quét Camera (QR / Barcode)</span>
+    </button>
+    <button 
+      type="button" 
+      id="tabBtnManual" 
+      onclick="switchScannerTab('manual')" 
+      class="flex-1 py-2 px-3 rounded-md text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center justify-center gap-2 cursor-pointer transition-all"
+    >
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+      </svg>
+      <span>2. Súng Quét Mã Vạch & Nhập Tay</span>
+    </button>
+  </div>
+
+  <!-- VIEW 1: CAMERA SCANNER (QR & BARCODE WEBCAM) -->
+  <div id="cameraTabContent" class="bg-white/95 dark:bg-slate-900/90 rounded-md border border-slate-200/80 dark:border-slate-800 p-5 shadow-xs space-y-4">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center">
+        <span class="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Khung Ngắm Camera Quét Mã Trực Tiếp</span>
+      </div>
+
+      <!-- Switch Camera dropdown -->
+      <div class="flex items-center gap-2">
+        <select 
+          id="cameraSourceSelect" 
+          class="px-2.5 py-1 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-md text-xs text-slate-700 dark:text-slate-300 focus:outline-none"
+        >
+          <option value="">Đang tải Camera...</option>
+        </select>
+        <button 
+          type="button" 
+          id="btnToggleCam"
+          onclick="toggleCamera()" 
+          class="px-3 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-md border border-slate-300 dark:border-slate-700 transition-colors"
+        >
+          Tắt Camera
+        </button>
+      </div>
+    </div>
+
+    <!-- Camera Viewport Box -->
+    <div class="relative bg-slate-950 rounded-md overflow-hidden min-h-[280px] sm:min-h-[340px] flex items-center justify-center border border-slate-700 shadow-inner">
+      <!-- Animated Laser Beam -->
+      <div id="cameraLaser" class="laser-beam"></div>
+
+      <!-- Target Viewfinder Overlay Corners -->
+      <div class="absolute inset-8 sm:inset-12 border-2 border-dashed border-white/40 rounded-md pointer-events-none z-10 flex flex-col justify-between p-2">
+        <div class="flex justify-between">
+          <div class="w-4 h-4 border-t-2 border-l-2 border-emerald-400"></div>
+          <div class="w-4 h-4 border-t-2 border-r-2 border-emerald-400"></div>
+        </div>
+        <div class="text-center">
+          <span class="px-2.5 py-1 bg-black/60 backdrop-blur-xs text-emerald-300 text-[11px] font-semibold rounded-md shadow-xs">
+            Hướng Mã QR hoặc Mã Vạch vào giữa khung
+          </span>
+        </div>
+        <div class="flex justify-between">
+          <div class="w-4 h-4 border-b-2 border-l-2 border-emerald-400"></div>
+          <div class="w-4 h-4 border-b-2 border-r-2 border-emerald-400"></div>
+        </div>
+      </div>
+
+      <!-- Html5Qrcode video container -->
+      <div id="qr-reader" class="w-full"></div>
+
+      <!-- Camera Off Notice Overlay -->
+      <div id="cameraOffNotice" class="hidden absolute inset-0 bg-slate-900/90 flex flex-col items-center justify-center text-slate-400 space-y-3 z-30 p-4 text-center">
+        <svg class="w-10 h-10 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+        </svg>
+        <div class="space-y-1">
+          <p class="text-sm font-semibold text-slate-200">Camera Đang Tắt</p>
+          <p class="text-xs text-slate-400">Bấm nút "Bật Camera" hoặc chuyển sang tab Nhập tay để kiểm tra vé</p>
+        </div>
+        <button 
+          onclick="startCamera()" 
+          class="px-4 py-2 bg-[#000080] hover:bg-[#001B5E] text-white text-xs font-bold rounded-md shadow-sm"
+        >
+          Bật Lại Camera
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW 2: HARDWARE BARCODE SCANNER & MANUAL INPUT -->
+  <div id="manualTabContent" class="hidden bg-white/95 dark:bg-slate-900/90 rounded-md border border-slate-200/80 dark:border-slate-800 p-5 shadow-xs space-y-4">
+    <div class="space-y-2">
+      <div class="flex items-center justify-between">
+        <label for="ticketCodeInput" class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block">
+          Mã vé điện tử (Súng quét USB / Gõ phím)
+        </label>
+        <span class="text-[11px] text-slate-500 dark:text-slate-400 font-semibold flex items-center">
+          <span>Sẵn sàng nhận tín hiệu súng quét</span>
+        </span>
+      </div>
+
+      <div class="flex gap-2.5">
+        <input 
+          type="text" 
+          id="ticketCodeInput" 
+          placeholder="TICK-2026-XXXXX" 
+          class="flex-1 uppercase font-mono text-base font-bold tracking-wider px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-md text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-900 focus:border-[#000080] dark:focus:border-sky-400 focus:outline-none transition-colors"
+          autofocus
+        />
+        <button 
+          type="button"
+          onclick="handleCheckin()" 
+          class="px-6 py-3 bg-[#000080] hover:bg-[#001B5E] dark:bg-[#1E60D5] dark:hover:bg-[#0D47A1] text-white font-bold text-sm rounded-md shadow-sm cursor-pointer transition-colors btn-tactile shrink-0"
+        >
+          Kiểm Tra →
+        </button>
+      </div>
+      <p class="text-[11px] text-slate-500 dark:text-slate-400">
+        💡 <strong>Mẹo:</strong> Súng quét mã vạch USB/Bluetooth sau khi bấm cò sẽ tự động nạp chuỗi và nhấn Enter tức thì.
+      </p>
+    </div>
+
+    <!-- Quick Test Buttons -->
+    <div class="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
+      <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
+        Nạp Nhanh Mã Vé Mẫu Để Kiểm Thử:
+      </span>
+      <div class="flex flex-wrap gap-2 text-xs">
+        <button 
+          type="button" 
+          onclick="fillTicket('TICK-2026-DEMO01')" 
+          class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 rounded-md border border-emerald-200 dark:border-emerald-800/60 font-mono font-medium transition-colors"
+        >
+          ✓ TICK-2026-DEMO01 (Hợp lệ)
+        </button>
+        <button 
+          type="button" 
+          onclick="fillTicket('TICK-2026-CANCEL03')" 
+          class="px-3 py-1.5 bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 dark:hover:bg-purple-900/60 text-purple-700 dark:text-purple-300 rounded-md border border-purple-200 dark:border-purple-800/60 font-mono font-medium transition-colors"
+          title="Bẫy lỗi SEED-05: Vé đã hủy vẫn duyệt qua cửa"
+        >
+          ⚠ TICK-2026-CANCEL03 (SEED-05 Vé đã hủy)
+        </button>
+        <button 
+          type="button" 
+          onclick="fillTicket('TICK-FAKE-99999')" 
+          class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 rounded-md border border-rose-200 dark:border-rose-800/60 font-mono font-medium transition-colors"
+        >
+          ✗ TICK-FAKE-99999 (Vé giả mạo)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULT SCREEN (DYNAMIC XANH LÁ HỢP LỆ / ĐỎ RỰC CẢNH BÁO) -->
+  <div id="resultScreen" class="rounded-md p-6 sm:p-8 text-center space-y-4 transition-all duration-300 hidden border shadow-lg relative overflow-hidden">
+    <!-- Auto Reset Progress Bar -->
+    <div id="resetProgressBar" class="absolute top-0 left-0 right-0 h-1.5 bg-white/40 origin-left transition-all duration-[2500ms] ease-linear"></div>
+
+    <div id="resultIcon" class="flex justify-center"></div>
+
+    <div class="space-y-1">
+      <h2 id="resultTitle" class="text-2xl sm:text-3xl font-black tracking-tight text-balance"></h2>
+      <p id="resultMsg" class="text-sm sm:text-base font-medium leading-relaxed max-w-lg mx-auto text-pretty"></p>
+    </div>
+
+    <!-- Ticket Detail Metadata -->
+    <div id="resultMeta" class="pt-4 border-t border-white/20 text-xs sm:text-sm space-y-1.5 font-mono max-w-md mx-auto text-left bg-black/10 rounded-md p-4"></div>
+
+    <!-- Manual Reset Action Button -->
+    <div class="pt-2 flex justify-center gap-3">
+      <button 
+        type="button" 
+        onclick="resetCheckinScreen()" 
+        class="px-4 py-2 bg-white/20 hover:bg-white/30 text-white font-bold text-xs rounded-md backdrop-blur-xs transition-colors cursor-pointer inline-flex items-center gap-1.5"
+      >
+        <span>Quét Vé Tiếp Theo Ngay (Phím Space)</span> ↵
+      </button>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  let html5QrCode = null;
+  let isCameraScanning = false;
+  let isCooldown = false;
+  let resetTimer = null;
+  let currentActiveTab = 'camera';
+
+  // --- 1. HỆ THỐNG ÂM THANH BÍP / BUZZ (WEB AUDIO API SYNTHESIZER) ---
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+  function playSound(frequency, type, duration) {
+    const soundEnabled = document.getElementById('soundToggle').checked;
+    if (!soundEnabled) return;
+    try {
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = type; // 'sine', 'square', 'sawtooth', 'triangle'
+      osc.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + duration);
+    } catch (e) {
+      console.warn("Audio playback error:", e);
+    }
+  }
+
+  function playAudioSuccess() {
+    // 2 tiếng Bíp cao vui tươi: 880Hz -> 1200Hz
+    playSound(880, 'sine', 0.12);
+    setTimeout(() => playSound(1200, 'sine', 0.15), 100);
+  }
+
+  function playAudioError() {
+    // 1 tiếng Buzz trầm cảnh báo: 220Hz
+    playSound(220, 'sawtooth', 0.35);
+  }
+
+  // --- 2. QUẢN LÝ TAB SCANNER ---
+  function switchScannerTab(tab) {
+    currentActiveTab = tab;
+    const btnCam = document.getElementById('tabBtnCamera');
+    const btnManual = document.getElementById('tabBtnManual');
+    const contentCam = document.getElementById('cameraTabContent');
+    const contentManual = document.getElementById('manualTabContent');
+
+    if (tab === 'camera') {
+      btnCam.className = "flex-1 py-2 px-3 rounded-md bg-white dark:bg-slate-900 text-[#000080] dark:text-sky-300 shadow-xs flex items-center justify-center gap-2 cursor-pointer transition-all";
+      btnManual.className = "flex-1 py-2 px-3 rounded-md text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center justify-center gap-2 cursor-pointer transition-all";
+      contentCam.classList.remove('hidden');
+      contentManual.classList.add('hidden');
+      startCamera();
+    } else {
+      btnManual.className = "flex-1 py-2 px-3 rounded-md bg-white dark:bg-slate-900 text-[#000080] dark:text-sky-300 shadow-xs flex items-center justify-center gap-2 cursor-pointer transition-all";
+      btnCam.className = "flex-1 py-2 px-3 rounded-md text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center justify-center gap-2 cursor-pointer transition-all";
+      contentManual.classList.remove('hidden');
+      contentCam.classList.add('hidden');
+      document.getElementById('ticketCodeInput').focus();
+    }
+  }
+
+  function switchEvent(eventId) {
+    window.location.href = `/checkin-gate?event_id=${eventId}`;
+  }
+
+  // --- 3. KHỞI TẠO CAMERA SCANNER (HTML5-QRCODE) ---
+  async function initCameraDevices() {
+    try {
+      const devices = await Html5Qrcode.getCameras();
+      const selectEl = document.getElementById('cameraSourceSelect');
+      selectEl.innerHTML = "";
+
+      if (devices && devices.length > 0) {
+        devices.forEach((dev, idx) => {
+          const opt = document.createElement('option');
+          opt.value = dev.id;
+          opt.innerText = dev.label || `Camera ${idx + 1}`;
+          selectEl.appendChild(opt);
+        });
+        selectEl.onchange = () => {
+          stopCamera().then(() => startCamera(selectEl.value));
+        };
+        startCamera(devices[devices.length - 1].id); // Ưu tiên camera sau nếu có
+      } else {
+        selectEl.innerHTML = "<option>Không tìm thấy Camera</option>";
+        switchScannerTab('manual');
+      }
+    } catch (err) {
+      console.warn("Không thể truy cập camera:", err);
+      document.getElementById('cameraSourceSelect').innerHTML = "<option>Chưa cấp quyền Camera</option>";
+      document.getElementById('cameraOffNotice').classList.remove('hidden');
+    }
+  }
+
+  async function startCamera(deviceId = null) {
+    if (isCameraScanning) return;
+    const notice = document.getElementById('cameraOffNotice');
+    const laser = document.getElementById('cameraLaser');
+    const btn = document.getElementById('btnToggleCam');
+    
+    notice.classList.add('hidden');
+    laser.classList.remove('hidden');
+    btn.innerText = "Tắt Camera";
+
+    if (!html5QrCode) {
+      html5QrCode = new Html5Qrcode("qr-reader");
+    }
+
+    const config = {
+      fps: 15,
+      qrbox: { width: 250, height: 250 },
+      aspectRatio: 1.0
+    };
+
+    const targetCamera = deviceId || document.getElementById('cameraSourceSelect').value || { facingMode: "environment" };
+
+    try {
+      await html5QrCode.start(
+        targetCamera,
+        config,
+        (decodedText) => {
+          // Bắt được mã QR hoặc Barcode
+          if (!isCooldown && decodedText) {
+            isCooldown = true;
+            fillAndCheckin(decodedText);
+            // Cooldown 2.5 giây tránh quét lặp liên tục
+            setTimeout(() => { isCooldown = false; }, 2500);
+          }
+        },
+        (errorMessage) => {
+          // Frame không có mã - bỏ qua
+        }
+      );
+      isCameraScanning = true;
+    } catch (err) {
+      console.error("Lỗi bật Camera:", err);
+      notice.classList.remove('hidden');
+      laser.classList.add('hidden');
+      btn.innerText = "Bật Camera";
+      isCameraScanning = false;
+    }
+  }
+
+  async function stopCamera() {
+    if (html5QrCode && isCameraScanning) {
+      try {
+        await html5QrCode.stop();
+      } catch (e) {
+        console.warn("Error stopping camera:", e);
+      }
+      isCameraScanning = false;
+    }
+    document.getElementById('cameraLaser').classList.add('hidden');
+    document.getElementById('cameraOffNotice').classList.remove('hidden');
+    document.getElementById('btnToggleCam').innerText = "Bật Camera";
+  }
+
+  function toggleCamera() {
+    if (isCameraScanning) {
+      stopCamera();
+    } else {
+      startCamera();
+    }
+  }
+
+  // --- 4. XỬ LÝ SOÁT VÉ & GỌI API ---
+  function fillTicket(code) {
+    document.getElementById('ticketCodeInput').value = code;
+    handleCheckin();
+  }
+
+  function fillAndCheckin(code) {
+    document.getElementById('ticketCodeInput').value = code;
+    handleCheckin(code);
+  }
+
+  async function handleCheckin(overrideCode = null) {
+    const rawCode = overrideCode || document.getElementById('ticketCodeInput').value.trim();
+    const eventId = parseInt(document.getElementById('eventSelect').value);
+    const screen = document.getElementById('resultScreen');
+    const icon = document.getElementById('resultIcon');
+    const title = document.getElementById('resultTitle');
+    const msg = document.getElementById('resultMsg');
+    const meta = document.getElementById('resultMeta');
+    const pBar = document.getElementById('resetProgressBar');
+
+    if (!rawCode) {
+      alert("Vui lòng quét hoặc nhập mã vé!");
+      return;
+    }
+
+    // Xóa timer đếm ngược cũ nếu có
+    if (resetTimer) clearTimeout(resetTimer);
+
+    try {
+      const res = await fetch('/api/check-in', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          ticket_code: rawCode,
+          event_id: eventId 
+        })
+      });
+      const data = await res.json();
+
+      screen.classList.remove('hidden', 'bg-emerald-600', 'bg-red-600', 'text-white', 'border-emerald-700', 'border-red-700');
+
+      if (data.success) {
+        // === MÀN HÌNH XANH LÁ: HỢP LỆ (Lưu ý: SEED-05 vé đã hủy vẫn vào đây) ===
+        playAudioSuccess();
+        screen.classList.add('bg-emerald-600', 'text-white', 'border-emerald-700');
+        icon.innerHTML = '<div class="w-16 h-16 rounded-md bg-white/20 flex items-center justify-center shadow-inner"><svg class="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg></div>';
+        title.innerText = "VÉ HỢP LỆ — MỜI VÀO CỬA";
+        msg.innerText = data.message;
+        meta.innerHTML = `
+          <div>Mã vé: <b class="tracking-wider">${data.ticket_code}</b></div>
+          <div>Khách hàng: <b>${data.attendee_name || 'Khách vãng lai'}</b></div>
+          <div>Hạng vé: <b>${data.tier_name || 'Standard'}</b></div>
+          <div>Thời gian vào cổng: <b>${data.check_in_time || 'Vừa xác thực'}</b></div>
+        `;
+
+        // Tăng bộ đếm trực tiếp trên giao diện
+        const checkedEl = document.getElementById('checkedCount');
+        if (checkedEl) checkedEl.innerText = parseInt(checkedEl.innerText) + 1;
+
+      } else {
+        // === MÀN HÌNH ĐỎ RỰC: TỪ CHỐI / CẢNH BÁO ===
+        playAudioError();
+        screen.classList.add('bg-red-600', 'text-white', 'border-red-700');
+        icon.innerHTML = '<div class="w-16 h-16 rounded-md bg-white/20 flex items-center justify-center shadow-inner"><svg class="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg></div>';
+        title.innerText = "TỪ CHỐI VÀO CỬA";
+        msg.innerText = data.message;
+        let metaHtml = `<div>Mã vé kiểm tra: <b class="tracking-wider">${data.ticket_code}</b></div>`;
+        if (data.attendee_name) metaHtml += `<div>Khách hàng: <b>${data.attendee_name}</b></div>`;
+        if (data.tier_name) metaHtml += `<div>Hạng vé: <b>${data.tier_name}</b></div>`;
+        if (data.check_in_time) metaHtml += `<div>Thời gian check-in trước: <b>${data.check_in_time}</b></div>`;
+        metaHtml += `<div>Mã lỗi phản hồi: <b>HTTP ${data.status_code}</b></div>`;
+        meta.innerHTML = metaHtml;
+      }
+
+      // Cuộn tới màn hình kết quả nếu ở màn hình nhỏ
+      screen.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+      // Hiệu ứng thanh đếm ngược lùi dần trong 2.5 giây
+      pBar.style.width = '100%';
+      setTimeout(() => { pBar.style.width = '0%'; }, 50);
+
+      // Tự động reset màn hình sau 2.5 giây để sẵn sàng đón khách tiếp theo
+      resetTimer = setTimeout(() => {
+        resetCheckinScreen();
+      }, 2500);
+
+    } catch (err) {
+      alert("Lỗi kết nối máy chủ khi soát vé: " + err.message);
+    }
+  }
+
+  function resetCheckinScreen() {
+    if (resetTimer) clearTimeout(resetTimer);
+    document.getElementById('resultScreen').classList.add('hidden');
+    document.getElementById('ticketCodeInput').value = "";
+    if (currentActiveTab === 'manual') {
+      document.getElementById('ticketCodeInput').focus();
+    }
+  }
+
+  // Phím tắt Space hoặc Escape để reset nhanh màn hình
+  document.addEventListener('keydown', (e) => {
+    if ((e.code === 'Space' || e.key === 'Escape') && !document.getElementById('resultScreen').classList.contains('hidden')) {
+      e.preventDefault();
+      resetCheckinScreen();
+    }
+  });
+
+  // Nhấn Enter ở ô input để kiểm tra
+  document.getElementById('ticketCodeInput').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') handleCheckin();
+  });
+
+  // Khởi động khi tải xong trang
+  document.addEventListener('DOMContentLoaded', () => {
+    initCameraDevices();
+  });
+</script>
+{% endblock %}

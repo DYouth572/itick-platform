@@ -1,0 +1,444 @@
+{% extends "base.html" %}
+
+{% block title %}Khám phá Sự kiện - iTick{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-3 sm:pb-4 space-y-6 sm:space-y-8">
+
+  <!-- HERO SECTION: ROYAL NAVY STAGE BANNER -->
+  <div class="relative rounded-md p-8 sm:p-14 text-white overflow-hidden shadow-2xl border border-slate-800/80">
+    <!-- Real Conference Stage Photography Backdrop -->
+    <img 
+      src="https://images.unsplash.com/photo-1511578314322-379afb476865?w=1600&auto=format&fit=crop&q=80" 
+      alt="Tech Conference Stage" 
+      class="absolute inset-0 w-full h-full object-cover object-center filter brightness-70 scale-105"
+      loading="eager"
+    />
+    
+    <!-- Deep Royal Navy Gradient Overlay -->
+    <div class="absolute inset-0 bg-gradient-to-r from-[#020817] via-[#020817]/85 to-[#000080]/75"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-[#020817]/95 via-transparent to-transparent"></div>
+
+    <!-- Elegant Royal Glows (Trust & Prestige) -->
+    <div class="absolute -right-10 top-0 w-96 h-96 bg-[#000080]/25 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute left-1/4 -bottom-10 w-80 h-80 bg-[#0D47A1]/20 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="relative z-10 max-w-3xl space-y-4">
+      <h1 class="font-gateway text-2xl sm:text-4xl md:text-5xl lg:text-[3.25rem] font-light tracking-wide text-white leading-snug sm:leading-[1.28] lg:leading-[1.32]">
+        <span class="block">Khám phá hội thảo &amp; Sự kiện</span>
+        <span class="block font-normal text-transparent bg-clip-text bg-gradient-to-r from-sky-100 via-blue-100 to-indigo-100 drop-shadow-sm mt-1 sm:mt-2 pb-1">
+          - công nghệ đỉnh cao
+        </span>
+      </h1>
+      <p class="text-slate-200/90 text-sm sm:text-base leading-relaxed text-pretty font-sans font-light max-w-xl">
+        Đặt vé an toàn chỉ trong 3 bước, bảo đảm quyền lợi với chính sách hoàn hủy minh bạch và mã vé điện tử QR bảo mật.
+      </p>
+    </div>
+  </div>
+
+  <!-- SEARCH & FILTER BAR (TRUST SEARCH CARD) -->
+  <div class="bg-white/95 dark:bg-[#0B172A]/90 backdrop-blur-md p-4 sm:p-5 rounded-md border border-slate-200/80 dark:border-slate-800 shadow-xl shadow-navy-950/5 transition-colors duration-300">
+    <form method="GET" action="/" id="searchFilterForm" class="space-y-4">
+      <!-- Search Input + Action Buttons Row -->
+      <div class="flex flex-col sm:flex-row items-center gap-3">
+        <!-- Keyword Input -->
+        <div class="relative flex-1 w-full">
+          <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
+            <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+          </span>
+          <input 
+            type="text" 
+            name="keyword" 
+            value="{{ keyword }}" 
+            placeholder="Tìm theo tên sự kiện hoặc địa điểm tổ chức..." 
+            class="w-full h-11 pl-10 pr-4 bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 rounded-md text-base sm:text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#000080]/40 dark:focus:ring-sky-500/40 focus:border-transparent transition-colors"
+          />
+        </div>
+
+        <div class="flex items-center gap-2.5 w-full sm:w-auto">
+          <!-- Submit Search Button -->
+          <button type="submit" class="flex-1 sm:flex-none h-11 px-6 min-w-[115px] flex items-center justify-center bg-[#000080] hover:bg-[#001B5E] dark:bg-[#1E60D5] dark:hover:bg-[#0D47A1] text-white font-semibold text-sm rounded-md shadow-sm btn-tactile whitespace-nowrap shrink-0">
+            Tìm kiếm
+          </button>
+
+          <!-- Button: Tất cả bộ lọc -->
+          <button 
+            type="button" 
+            id="filterToggleBtn"
+            onclick="toggleFilterPanel()" 
+            class="flex-1 sm:flex-none h-11 px-4 min-w-[135px] flex items-center justify-center gap-2 border {% if active_filters_count > 0 %}border-[#000080] bg-[#F0F5FC] dark:bg-navy-950/40 text-[#000080] dark:text-sky-300{% else %}border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200{% endif %} font-medium text-sm rounded-md btn-tactile whitespace-nowrap shrink-0"
+          >
+            <svg class="w-4 h-4 {% if active_filters_count > 0 %}text-[#000080] dark:text-sky-400{% else %}text-slate-500 dark:text-slate-400{% endif %}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+            </svg>
+            <span>Tất cả bộ lọc</span>
+            {% if active_filters_count > 0 %}
+              <span class="px-1.5 py-0.5 bg-[#000080] text-white rounded-md text-[10px] font-bold leading-none min-w-[18px] text-center">
+                {{ active_filters_count }}
+              </span>
+            {% endif %}
+            <svg id="filterArrowIcon" class="w-3.5 h-3.5 text-slate-400 transition-transform duration-200 {% if active_filters_count > 0 %}rotate-180{% endif %}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- FILTER PANEL (COLLAPSIBLE / EXPANDABLE) -->
+      <div 
+        id="filterPanel" 
+        class="{% if active_filters_count == 0 %}hidden{% endif %} pt-4 border-t border-slate-200/80 dark:border-slate-800 space-y-4"
+      >
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4 bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700">
+          
+          <!-- Dropdown 1: Chủ đề (Topic) -->
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-slate-700 dark:text-slate-300 block uppercase tracking-wider">
+              Chủ đề (Topic)
+            </label>
+            <select 
+              name="category" 
+              class="w-full h-10 px-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-sm rounded-md text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-[#000080]/40 focus:border-transparent focus:outline-none transition-colors"
+            >
+              <option value="ALL" {% if category == 'ALL' %}selected{% endif %}>Tất cả chủ đề</option>
+              <option value="BUSINESS" {% if category == 'BUSINESS' %}selected{% endif %}>Kinh doanh & Đầu tư</option>
+              <option value="EDUCATION" {% if category == 'EDUCATION' %}selected{% endif %}>Giáo dục & Đào tạo</option>
+              <option value="TECHNOLOGY" {% if category == 'TECHNOLOGY' %}selected{% endif %}>Công nghệ & Trí tuệ nhân tạo</option>
+              <option value="MUSIC" {% if category == 'MUSIC' %}selected{% endif %}>Âm nhạc & Nghệ thuật</option>
+              <option value="LIFESTYLE" {% if category == 'LIFESTYLE' %}selected{% endif %}>Đời sống & Văn hóa</option>
+              <option value="WORKSHOP" {% if category == 'WORKSHOP' %}selected{% endif %}>Hội thảo & Workshop</option>
+            </select>
+          </div>
+
+          <!-- Dropdown 2: Trạng thái bán vé -->
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-slate-700 dark:text-slate-300 block uppercase tracking-wider">
+              Trạng thái mua vé
+            </label>
+            <select 
+              name="status_filter" 
+              class="w-full h-10 px-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-sm rounded-md text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-[#000080]/40 focus:border-transparent focus:outline-none transition-colors"
+            >
+              <option value="ALL" {% if status_filter == 'ALL' %}selected{% endif %}>Tất cả trạng thái</option>
+              <option value="OPEN" {% if status_filter == 'OPEN' %}selected{% endif %}>Đang mở bán vé</option>
+              <option value="CLOSING_SOON" {% if status_filter == 'CLOSING_SOON' %}selected{% endif %}>Sắp diễn ra (trong 24h)</option>
+              <option value="CLOSED" {% if status_filter == 'CLOSED' %}selected{% endif %}>Đã đóng cổng vé</option>
+            </select>
+          </div>
+
+          <!-- Dropdown 3: Mức giá vé -->
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-slate-700 dark:text-slate-300 block uppercase tracking-wider">
+              Mức giá vé
+            </label>
+            <select 
+              name="price_range" 
+              class="w-full h-10 px-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-sm rounded-md text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-[#000080]/40 focus:border-transparent focus:outline-none transition-colors"
+            >
+              <option value="ALL" {% if price_range == 'ALL' %}selected{% endif %}>Tất cả mức giá</option>
+              <option value="FREE" {% if price_range == 'FREE' %}selected{% endif %}>Miễn phí tham dự</option>
+              <option value="UNDER_300K" {% if price_range == 'UNDER_300K' %}selected{% endif %}>Dưới 300.000đ</option>
+              <option value="OVER_300K" {% if price_range == 'OVER_300K' %}selected{% endif %}>Từ 300.000đ trở lên</option>
+            </select>
+          </div>
+
+          <!-- Dropdown 4: Khu vực tổ chức -->
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-slate-700 dark:text-slate-300 block uppercase tracking-wider">
+              Khu vực tổ chức
+            </label>
+            <select 
+              name="location_filter" 
+              class="w-full h-10 px-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-sm rounded-md text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-[#000080]/40 focus:border-transparent focus:outline-none transition-colors"
+            >
+              <option value="ALL" {% if location_filter == 'ALL' %}selected{% endif %}>Toàn quốc (Tất cả địa điểm)</option>
+              <option value="HANOI" {% if location_filter == 'HANOI' %}selected{% endif %}>Hà Nội</option>
+              <option value="HCM" {% if location_filter == 'HCM' %}selected{% endif %}>TP. Hồ Chí Minh</option>
+            </select>
+          </div>
+
+        </div>
+
+        <!-- Filter Actions Row -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
+          <div class="text-xs text-slate-500">
+            {% if active_filters_count > 0 %}
+              Đang áp dụng <strong class="text-[#000080] dark:text-sky-400 font-bold">{{ active_filters_count }}</strong> tiêu chí lọc
+            {% else %}
+              Tùy chỉnh các tiêu chí phía trên rồi nhấn <strong>Áp dụng bộ lọc</strong>
+            {% endif %}
+          </div>
+          <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+            {% if active_filters_count > 0 or keyword %}
+              <a 
+                href="/" 
+                class="px-4 py-2 bg-slate-100 hover:bg-[#F0F5FC] text-slate-700 hover:text-[#000080] font-medium text-xs rounded-md btn-tactile text-center"
+              >
+                Đặt lại bộ lọc
+              </a>
+            {% endif %}
+            <button 
+              type="submit" 
+              class="px-5 py-2 bg-[#000080] hover:bg-[#001B5E] dark:bg-[#1E60D5] dark:hover:bg-[#0D47A1] text-white font-semibold text-xs rounded-md shadow-sm btn-tactile"
+            >
+              Áp dụng bộ lọc
+            </button>
+            <button 
+              type="button" 
+              onclick="toggleFilterPanel()" 
+              class="px-3 py-2 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 text-xs"
+            >
+              Thu gọn ▲
+            </button>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- SECTION TITLE -->
+  <div class="pt-2">
+    <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+      Sự kiện Nổi bật
+    </h2>
+    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+      Danh sách sự kiện, hội thảo và workshop uy tín được cập nhật mới nhất
+    </p>
+  </div>
+
+  <!-- EVENT LIST GRID (PURE WHITE & DEEP NAVY CARDS) -->
+  <div>
+    {% if events and events|length > 0 %}
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
+        {% for event in events %}
+          <div class="group bg-white dark:bg-[#0B172A]/95 rounded-md border border-slate-200/80 dark:border-slate-800 card-lift shadow-sm hover:shadow-xl hover:shadow-navy-950/10 hover:border-[#000080]/30 dark:hover:border-sky-500/30 flex flex-col h-full overflow-hidden transition-all duration-300">
+            
+            <!-- Banner Image -->
+            <div class="relative h-48 w-full bg-slate-100 dark:bg-slate-800 overflow-hidden rounded-t-md img-inset-ring">
+              <img 
+                src="{{ event.banner_url }}" 
+                alt="{{ event.title }}" 
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                loading="lazy"
+              />
+              {% if event.is_sales_closed %}
+                <span class="absolute top-3 right-3 px-2.5 py-1 text-[11px] font-bold bg-rose-600 text-white shadow-xs rounded-md flex items-center gap-1">
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  ĐÃ HẾT THỜI GIAN MUA VÉ
+                </span>
+              {% elif event.minutes_until_close <= 360 and event.minutes_until_close > 0 %}
+                <span class="absolute top-3 right-3 px-2.5 py-1 text-[11px] font-bold bg-amber-500 text-white shadow-xs rounded-md uppercase">
+                  SẮP DIỄN RA
+                </span>
+              {% endif %}
+            </div>
+
+            <!-- Content Area -->
+            <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
+              <div class="space-y-2.5">
+                
+                <!-- Tiêu đề sự kiện -->
+                <h3 class="text-base font-bold text-slate-900 dark:text-white group-hover:text-[#000080] dark:group-hover:text-sky-300 transition-colors line-clamp-2 h-12 leading-snug text-balance">
+                  <a href="/events/{{ event.id }}" title="{{ event.title }}">
+                    {{ event.title }}
+                  </a>
+                </h3>
+
+                <!-- Date & Location & Sales Deadline -->
+                <div class="space-y-1.5 text-xs text-slate-500 dark:text-slate-400">
+                  <div class="flex items-center gap-2">
+                    <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    <span class="tabular-nums font-medium text-slate-700 dark:text-slate-300">Diễn ra: {{ event.start_time.strftime("%H:%M ngày %d/%m/%Y") }}</span>
+                  </div>
+
+                  <!-- THỜI GIAN ĐÓNG MUA VÉ -->
+                  <div class="flex items-center gap-2">
+                    <svg class="w-3.5 h-3.5 {% if event.is_sales_closed %}text-rose-500{% else %}text-amber-600{% endif %} shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    {% if event.is_sales_closed %}
+                      <span class="font-bold text-rose-600 dark:text-rose-400">Hạn mua vé: Đã kết thúc lúc {{ event.sales_deadline.strftime("%H:%M") }}</span>
+                    {% else %}
+                      <span class="text-slate-600 dark:text-slate-400">Đóng bán vé: <strong class="text-slate-800 dark:text-slate-200 tabular-nums">{{ event.sales_deadline.strftime("%H:%M ngày %d/%m/%Y") }}</strong></span>
+                    {% endif %}
+                  </div>
+
+                  <div class="flex items-center gap-2 line-clamp-1">
+                    <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    <span>{{ event.location }}</span>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Price & CTA Button -->
+              <div class="pt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+                <div>
+                  <span class="text-[11px] text-slate-500 dark:text-slate-400 block">Giá vé từ</span>
+                  {% if event.tiers and event.tiers|length > 0 %}
+                    {% set min_price = (event.tiers | map(attribute='price') | min) %}
+                    <span class="text-base font-bold text-[#000080] dark:text-sky-300 font-mono tabular-nums">
+                      {{ "{:,.0f}".format(min_price) }}đ
+                    </span>
+                  {% else %}
+                    <span class="text-sm font-semibold text-slate-600 dark:text-slate-400">Miễn phí</span>
+                  {% endif %}
+                </div>
+
+                {% if event.is_sales_closed %}
+                  <a 
+                    href="/events/{{ event.id }}" 
+                    class="px-3 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-rose-600 dark:text-rose-400 text-xs font-semibold rounded-md border border-rose-200 dark:border-rose-900/50 btn-tactile"
+                  >
+                    Đã đóng bán vé
+                  </a>
+                {% else %}
+                  <a 
+                    href="/events/{{ event.id }}" 
+                    class="px-4 py-2 bg-[#000080] hover:bg-[#001B5E] dark:bg-[#1E60D5] dark:hover:bg-[#0D47A1] text-white text-xs font-semibold rounded-md shadow-xs btn-tactile"
+                  >
+                    Mua Vé →
+                  </a>
+                {% endif %}
+              </div>
+
+            </div>
+
+          </div>
+        {% endfor %}
+      </div>
+
+      <!-- PAGINATION (CĂN GIỮA, NỀN TRẮNG, THEO CHUẨN THIẾT KẾ MẪU) -->
+      {% if total_events > 0 %}
+        <div class="flex justify-center items-center gap-3 pt-6 sm:pt-7 pb-1 select-none">
+          <!-- Nút Trang trước (Previous Page) -->
+          {% if page > 1 %}
+            <button 
+              type="button"
+              onclick="changePage({{ page - 1 }})"
+              title="Trang trước"
+              aria-label="Trang trước"
+              class="w-10 h-10 rounded-full bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-700 text-slate-700 dark:text-slate-200 shadow-xs hover:shadow hover:border-[#000080]/40 dark:hover:border-sky-500/40 hover:text-[#000080] dark:hover:text-sky-300 flex items-center justify-center transition-all btn-tactile cursor-pointer"
+            >
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+            </button>
+          {% else %}
+            <button 
+              type="button"
+              disabled
+              aria-disabled="true"
+              title="Đang ở trang đầu tiên"
+              class="w-10 h-10 rounded-full bg-white/70 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800 text-slate-300 dark:text-slate-600 flex items-center justify-center cursor-not-allowed opacity-50"
+            >
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+            </button>
+          {% endif %}
+
+          <!-- Viên nang phân trang chính giữa (Pill Capsule: Trang [ 1 ] / 160) -->
+          <div class="h-10 px-4 rounded-full bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-700 shadow-xs flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200 font-medium">
+            <span>Trang</span>
+            
+            <!-- Ô hiển thị & nhập số trang nhảy nhanh -->
+            <input 
+              type="number" 
+              id="paginationPageInput"
+              min="1" 
+              max="{{ total_pages }}" 
+              value="{{ page }}"
+              onkeydown="if(event.key === 'Enter') { event.preventDefault(); changePage(this.value); }"
+              onchange="changePage(this.value)"
+              title="Nhập số trang và nhấn Enter để chuyển đến"
+              aria-label="Số trang hiện tại"
+              class="w-12 h-7 px-1 text-center font-bold text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-xs sm:text-sm tabular-nums focus:outline-none focus:ring-1 focus:ring-[#000080] dark:focus:ring-sky-400 focus:border-[#000080] dark:focus:border-sky-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            />
+
+            <span class="text-slate-400 dark:text-slate-500 tabular-nums">/ {{ total_pages }}</span>
+          </div>
+
+          <!-- Nút Trang tiếp theo (Next Page) -->
+          {% if page < total_pages %}
+            <button 
+              type="button"
+              onclick="changePage({{ page + 1 }})"
+              title="Trang tiếp theo"
+              aria-label="Trang tiếp theo"
+              class="w-10 h-10 rounded-full bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-700 text-slate-700 dark:text-slate-200 shadow-xs hover:shadow hover:border-[#000080]/40 dark:hover:border-sky-500/40 hover:text-[#000080] dark:hover:text-sky-300 flex items-center justify-center transition-all btn-tactile cursor-pointer"
+            >
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </button>
+          {% else %}
+            <button 
+              type="button"
+              disabled
+              aria-disabled="true"
+              title="Đang ở trang cuối cùng"
+              class="w-10 h-10 rounded-full bg-white/70 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800 text-slate-300 dark:text-slate-600 flex items-center justify-center cursor-not-allowed opacity-50"
+            >
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </button>
+          {% endif %}
+        </div>
+      {% endif %}
+    {% else %}
+      <!-- === SEED-09: BUG NỘI DUNG VIẾT KHÔNG DẤU TIẾNG VIỆT === -->
+      <div class="bg-white dark:bg-[#0B172A] rounded-md border border-slate-200 dark:border-slate-800 p-12 text-center space-y-3">
+        <div class="w-12 h-12 mx-auto rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+        </div>
+        <!-- LỖI SEED-09: Viết không dấu và sai chính tả (Bảo toàn nguyên vẹn) -->
+        <p class="text-sm font-medium text-slate-600 dark:text-slate-300">
+          Khong tim thay su kien nao phu hop. Xin vui long tim kiem lai!
+        </p>
+        <a href="/" class="inline-block px-4 py-2 bg-[#E1ECF9] dark:bg-navy-950/80 text-[#000080] dark:text-sky-300 rounded-md text-xs font-semibold hover:bg-[#C3D9EF] transition">
+          Xóa bộ lọc tìm kiếm
+        </a>
+      </div>
+    {% endif %}
+</div>
+
+<script>
+  function toggleFilterPanel() {
+    const panel = document.getElementById('filterPanel');
+    const arrow = document.getElementById('filterArrowIcon');
+    if (!panel) return;
+    if (panel.classList.contains('hidden')) {
+      panel.classList.remove('hidden');
+      if (arrow) arrow.classList.add('rotate-180');
+    } else {
+      panel.classList.add('hidden');
+      if (arrow) arrow.classList.remove('rotate-180');
+    }
+  }
+
+  function changePage(pageNum) {
+    let p = parseInt(pageNum, 10);
+    const maxPages = {{ total_pages }};
+    if (isNaN(p) || p < 1) p = 1;
+    if (p > maxPages) p = maxPages;
+    if (p === {{ page }}) return;
+
+    const url = new URL(window.location.href);
+    url.searchParams.set('page', p);
+    window.location.href = url.pathname + url.search;
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Giao Dịch Đã Hủy - iTick{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-12">
+  <div class="bg-white/95 dark:bg-[#0B172A]/90 backdrop-blur-sm rounded-md border border-slate-200/80 dark:border-slate-800/80 shadow-md p-8 text-center space-y-6 transition-colors">
+    
+    <!-- Warning Badge -->
+    <div class="w-16 h-16 rounded-md bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto shadow-xs">
+      <svg class="w-8 h-8 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+    </div>
+
+    <div class="space-y-1">
+      <h1 class="text-2xl font-bold text-slate-900 dark:text-white text-balance">Giao Dịch Chưa Hoàn Tất</h1>
+      <p class="text-xs text-slate-500 dark:text-slate-400">
+        Bạn đã hủy hoặc phiên thanh toán trên cổng VietQR PayOS đã kết thúc.
+      </p>
+      {% if order %}
+        <p class="text-xs text-slate-500 dark:text-slate-400 pt-1">
+          Mã đơn hàng: <span class="font-mono font-bold text-slate-800 dark:text-slate-200">{{ order.order_code }}</span>
+        </p>
+      {% endif %}
+    </div>
+
+    <!-- Cancellation Notice Box -->
+    <div class="bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/70 dark:border-amber-900/40 rounded-md p-4 text-xs text-amber-800 dark:text-amber-300 text-left space-y-2">
+      <div class="flex items-start gap-2">
+        <svg class="w-4 h-4 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <div>
+          <span class="font-semibold block">Thông tin hủy đơn:</span>
+          <p class="mt-0.5 text-slate-600 dark:text-slate-400">
+            Số lượng vé giữ chỗ tạm thời đã được tự động hoàn trả lại kho sự kiện. Không có bất kỳ khoản tiền nào bị trừ khỏi tài khoản ngân hàng của bạn.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="pt-4 flex flex-col sm:flex-row gap-3 justify-center">
+      {% if order and order.event %}
+        <a 
+          href="/events/{{ order.event.id }}" 
+          class="px-5 py-2.5 bg-[#000080] hover:bg-[#001B5E] dark:bg-[#1E60D5] dark:hover:bg-[#0D47A1] text-white text-xs font-bold rounded-md shadow-sm btn-tactile inline-flex items-center justify-center gap-2"
+        >
+          <span>Thử Đặt Vé Lại</span> →
+        </a>
+      {% endif %}
+      <a 
+        href="/" 
+        class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-md border border-slate-200 dark:border-slate-700 transition-colors inline-flex items-center justify-center"
+      >
+        Về Trang Chủ Sự Kiện
+      </a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

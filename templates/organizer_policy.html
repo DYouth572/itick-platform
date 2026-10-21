@@ -1,0 +1,331 @@
+{% extends "base.html" %}
+
+{% block title %}Chính Sách & Quy Định Dành Cho Ban Tổ Chức — iTick{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8 font-sans">
+
+  <!-- HERO BANNER / TIÊU ĐỀ CHÍNH SÁCH -->
+  <div class="bg-gradient-to-br from-slate-900 via-[#001B5E] to-[#000080] rounded-xl p-6 sm:p-10 text-white shadow-xl relative overflow-hidden">
+    <div class="relative z-10 space-y-3 max-w-3xl">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-semibold uppercase tracking-wider text-sky-200">
+        <span>Văn Bản Pháp Lý & Điều Khoản Nền Tảng</span>
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+        <span class="text-white">Áp dụng từ: 10/2026</span>
+      </div>
+      <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight">
+        Chính Sách & Quy Định Vận Hành Dành Cho Ban Tổ Chức
+      </h1>
+      <p class="text-sm sm:text-base text-slate-200 leading-relaxed text-pretty">
+        Văn bản quy định chi tiết về cơ chế phí dịch vụ nền tảng (5%), quy trình phân bổ dòng tiền, đối soát tài chính, chính sách hoàn hủy vé và các tiêu chuẩn kiểm duyệt nội dung mà mọi đối tác tổ chức sự kiện trên iTick có trách nhiệm tuân thủ.
+      </p>
+      <div class="pt-2 flex flex-wrap items-center gap-4 text-xs text-sky-200">
+        <span class="flex items-center gap-1.5">
+          <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          Phí sàn minh bạch 5%
+        </span>
+        <span class="flex items-center gap-1.5">
+          <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          Nhận 95% dòng tiền tức thì vào ví
+        </span>
+        <span class="flex items-center gap-1.5">
+          <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          Miễn phí 100% sự kiện vé 0đ
+        </span>
+      </div>
+    </div>
+    <!-- Decorative Watermark Pattern -->
+    <div class="absolute -right-10 -bottom-10 opacity-10 select-none pointer-events-none text-white text-9xl font-black">
+      iTick
+    </div>
+  </div>
+
+  <!-- BỐ CỤC 2 CỘT: MỤC LỤC & NỘI DUNG CHI TIẾT -->
+  <div class="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+
+    <!-- CỘT TRÁI: MỤC LỤC ĐIỀU HƯỚNG NHANH (STICKY) -->
+    <div class="lg:col-span-1 bg-white p-5 rounded-xl border border-slate-200/90 shadow-xs sticky top-20 space-y-4">
+      <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100 flex items-center justify-between">
+        <span>Mục Lục Quy Định</span>
+        <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" /></svg>
+      </h3>
+      <nav class="space-y-1.5 text-xs">
+        <a href="#muc-1" class="block px-2.5 py-1.5 rounded-md text-slate-600 hover:text-[#000080] hover:bg-[#F0F5FC] font-medium transition-colors">1. Nguyên tắc chung</a>
+        <a href="#muc-2" class="block px-2.5 py-1.5 rounded-md text-[#000080] bg-[#F0F5FC] font-bold transition-colors">2. Biểu phí sàn iTick (5%)</a>
+        <a href="#muc-3" class="block px-2.5 py-1.5 rounded-md text-slate-600 hover:text-[#000080] hover:bg-[#F0F5FC] font-medium transition-colors">3. Đối soát & Dòng tiền ví</a>
+        <a href="#muc-4" class="block px-2.5 py-1.5 rounded-md text-slate-600 hover:text-[#000080] hover:bg-[#F0F5FC] font-medium transition-colors">4. Hoàn tiền & Hủy vé</a>
+        <a href="#muc-5" class="block px-2.5 py-1.5 rounded-md text-slate-600 hover:text-[#000080] hover:bg-[#F0F5FC] font-medium transition-colors">5. Kiểm duyệt & Đăng sự kiện</a>
+        <a href="#muc-6" class="block px-2.5 py-1.5 rounded-md text-slate-600 hover:text-[#000080] hover:bg-[#F0F5FC] font-medium transition-colors">6. Quy định soát vé tại cổng</a>
+        <a href="#muc-7" class="block px-2.5 py-1.5 rounded-md text-slate-600 hover:text-[#000080] hover:bg-[#F0F5FC] font-medium transition-colors">7. Chế tài xử lý vi phạm</a>
+        <a href="#muc-8" class="block px-2.5 py-1.5 rounded-md text-slate-600 hover:text-[#000080] hover:bg-[#F0F5FC] font-medium transition-colors">8. Cam kết của Ban tổ chức</a>
+      </nav>
+      <div class="pt-3 border-t border-slate-100 flex flex-col gap-2">
+        <button onclick="window.print()" class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+          In Văn Bản Này
+        </button>
+        <a href="/organizer" class="w-full py-2 bg-[#000080] hover:bg-[#001B5E] text-white rounded-md text-xs font-bold text-center transition-colors">
+          Vào Trang Quản Trị →
+        </a>
+      </div>
+    </div>
+
+    <!-- CỘT PHẢI: NỘI DUNG VĂN BẢN CHÍNH THỨC -->
+    <div class="lg:col-span-3 space-y-8">
+
+      <!-- MỤC 1: NGUYÊN TẮC CHUNG -->
+      <section id="muc-1" class="bg-white p-6 sm:p-8 rounded-xl border border-slate-200/90 shadow-xs space-y-4">
+        <div class="flex items-center gap-3">
+          <span class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-700 font-bold flex items-center justify-center text-sm">1</span>
+          <h2 class="text-lg font-bold text-slate-900 tracking-tight">Nguyên Tắc Chung & Phạm Vi Điều Chỉnh</h2>
+        </div>
+        <p class="text-xs text-slate-600 leading-relaxed">
+          Chính sách này áp dụng cho tất cả cá nhân, tổ chức, doanh nghiệp, hội nhóm (sau đây gọi tắt là <strong>"Ban Tổ Chức"</strong> hoặc <strong>"BTC"</strong>) khi khởi tạo tài khoản có vai trò <code>ORGANIZER</code> và phát hành, mở bán vé sự kiện trên nền tảng trực tuyến <strong>iTick</strong>.
+        </p>
+        <div class="p-3.5 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-700 space-y-1.5">
+          <div class="font-bold text-slate-900">Khi sử dụng dịch vụ của iTick, Ban Tổ Chức đồng thuận rằng:</div>
+          <ul class="list-disc list-inside space-y-1 text-slate-600">
+            <li>Nền tảng iTick đóng vai trò là giải pháp công nghệ trung gian kết nối giữa BTC và người tham dự (khách mua vé).</li>
+            <li>BTC chịu toàn bộ trách nhiệm pháp lý về tính hợp pháp, nội dung, bản quyền, an ninh trật tự và nghĩa vụ thuế liên quan đến sự kiện tổ chức.</li>
+            <li>Hệ thống thực hiện tính toán phí dịch vụ tự động theo đúng tỷ lệ niêm yết công khai tại văn bản này.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- MỤC 2: CHÍNH SÁCH PHÍ SÀN NỀN TẢNG (5%) -->
+      <section id="muc-2" class="bg-white p-6 sm:p-8 rounded-xl border border-slate-200/90 shadow-xs space-y-5">
+        <div class="flex items-center gap-3">
+          <span class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 font-bold flex items-center justify-center text-sm">2</span>
+          <div>
+            <h2 class="text-lg font-bold text-slate-900 tracking-tight">Cơ Chế Phí Dịch Vụ Nền Tảng iTick (Platform Commission Fee)</h2>
+            <p class="text-xs text-slate-500">Mức phí cạnh tranh, bảo đảm duy trì hạ tầng chịu tải cao và hệ thống bảo mật thanh toán</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="p-4 bg-emerald-50/70 border border-emerald-200 rounded-lg text-center space-y-1">
+            <div class="text-[11px] font-bold text-emerald-800 uppercase tracking-wider">Tỷ Lệ Phí Tiêu Chuẩn</div>
+            <div class="text-3xl font-extrabold text-emerald-700">5.0%</div>
+            <div class="text-[11px] text-emerald-600">Trên doanh thu thực thu</div>
+          </div>
+          <div class="p-4 bg-blue-50/70 border border-blue-200 rounded-lg text-center space-y-1">
+            <div class="text-[11px] font-bold text-blue-800 uppercase tracking-wider">Sự Kiện Miễn Phí (0đ)</div>
+            <div class="text-3xl font-extrabold text-blue-700">0%</div>
+            <div class="text-[11px] text-blue-600">Miễn phí 100% trọn đời</div>
+          </div>
+          <div class="p-4 bg-purple-50/70 border border-purple-200 rounded-lg text-center space-y-1">
+            <div class="text-[11px] font-bold text-purple-800 uppercase tracking-wider">Chi Trả Về Ví BTC</div>
+            <div class="text-3xl font-extrabold text-purple-700">95.0%</div>
+            <div class="text-[11px] text-purple-600">Ghi nhận tức thời tự động</div>
+          </div>
+        </div>
+
+        <div class="space-y-3 text-xs text-slate-700">
+          <h4 class="font-bold text-sm text-slate-900">2.1. Công Thức Tính Phí Sàn & Làm Tròn Số Tiền VND</h4>
+          <p class="leading-relaxed">
+            Do tiền tệ Việt Nam Đồng (VND) không sử dụng đơn vị số thập phân lẻ, hệ thống iTick áp dụng quy tắc làm tròn số học chuẩn <code>round()</code> sang số nguyên gần nhất:
+          </p>
+          <div class="p-4 bg-slate-900 text-sky-300 rounded-lg font-mono text-xs space-y-1.5 overflow-x-auto">
+            <div>Phí_Sàn = round(Số_Tiền_Thực_Trả * 5 / 100)</div>
+            <div>Doanh_Thu_BTC = Số_Tiền_Thực_Trả - Phí_Sàn</div>
+          </div>
+
+          <h4 class="font-bold text-sm text-slate-900 pt-2">2.2. Nguyên Tắc Tính Phí Khi Áp Dụng Voucher Giảm Giá</h4>
+          <p class="leading-relaxed">
+            iTick cam kết bảo vệ tối đa lợi ích của Ban Tổ Chức: Phí sàn chỉ được tính dựa trên <strong>Số tiền thực tế mà khách hàng thanh toán (Final Amount)</strong>, tuyệt đối <strong>KHÔNG</strong> tính phí trên phần giá trị đã được giảm giá bởi Voucher.
+          </p>
+
+          <h4 class="font-bold text-sm text-slate-900 pt-2">2.3. Bảng Ví Dụ Minh Họa Dòng Tiền Thực Tế</h4>
+          <div class="overflow-x-auto border border-slate-200 rounded-lg">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200 uppercase">
+                <tr>
+                  <th class="px-3.5 py-2.5">Trường Hợp / Loại Vé</th>
+                  <th class="px-3.5 py-2.5 text-right">Giá Gốc</th>
+                  <th class="px-3.5 py-2.5 text-right">Giảm Giá</th>
+                  <th class="px-3.5 py-2.5 text-right">Khách Trả</th>
+                  <th class="px-3.5 py-2.5 text-right text-rose-600">Phí Sàn iTick (5%)</th>
+                  <th class="px-3.5 py-2.5 text-right text-emerald-700 font-bold">BTC Thực Nhận (95%)</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 font-mono">
+                <tr>
+                  <td class="px-3.5 py-2 font-sans font-medium text-slate-900">Vé VIP All-Access</td>
+                  <td class="px-3.5 py-2 text-right">1,000,000đ</td>
+                  <td class="px-3.5 py-2 text-right text-slate-400">0đ</td>
+                  <td class="px-3.5 py-2 text-right font-bold">1,000,000đ</td>
+                  <td class="px-3.5 py-2 text-right text-rose-600">50,000đ</td>
+                  <td class="px-3.5 py-2 text-right text-emerald-700 font-bold">950,000đ</td>
+                </tr>
+                <tr>
+                  <td class="px-3.5 py-2 font-sans font-medium text-slate-900">Vé Tiêu Chuẩn (Số Lẻ)</td>
+                  <td class="px-3.5 py-2 text-right">199,000đ</td>
+                  <td class="px-3.5 py-2 text-right text-slate-400">0đ</td>
+                  <td class="px-3.5 py-2 text-right font-bold">199,000đ</td>
+                  <td class="px-3.5 py-2 text-right text-rose-600">9,950đ</td>
+                  <td class="px-3.5 py-2 text-right text-emerald-700 font-bold">189,050đ</td>
+                </tr>
+                <tr>
+                  <td class="px-3.5 py-2 font-sans font-medium text-slate-900">Vé Áp Voucher GIAM20</td>
+                  <td class="px-3.5 py-2 text-right">300,000đ</td>
+                  <td class="px-3.5 py-2 text-right text-indigo-600">-60,000đ</td>
+                  <td class="px-3.5 py-2 text-right font-bold">240,000đ</td>
+                  <td class="px-3.5 py-2 text-right text-rose-600">12,000đ</td>
+                  <td class="px-3.5 py-2 text-right text-emerald-700 font-bold">228,000đ</td>
+                </tr>
+                <tr class="bg-slate-50/50">
+                  <td class="px-3.5 py-2 font-sans font-medium text-slate-900">Vé Miễn Phí (Community)</td>
+                  <td class="px-3.5 py-2 text-right">0đ</td>
+                  <td class="px-3.5 py-2 text-right text-slate-400">0đ</td>
+                  <td class="px-3.5 py-2 text-right font-bold">0đ</td>
+                  <td class="px-3.5 py-2 text-right text-slate-400">0đ (Miễn phí)</td>
+                  <td class="px-3.5 py-2 text-right text-slate-400">0đ</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- MỤC 3: ĐỐI SOÁT & DÒNG TIỀN VÍ -->
+      <section id="muc-3" class="bg-white p-6 sm:p-8 rounded-xl border border-slate-200/90 shadow-xs space-y-4">
+        <div class="flex items-center gap-3">
+          <span class="w-8 h-8 rounded-lg bg-sky-50 text-sky-700 font-bold flex items-center justify-center text-sm">3</span>
+          <h2 class="text-lg font-bold text-slate-900 tracking-tight">Đối Soát Dòng Tiền & Quản Lý Số Dư Ví</h2>
+        </div>
+        <div class="space-y-3 text-xs text-slate-600 leading-relaxed">
+          <p>
+            Ngay khi một giao dịch mua vé hoàn tất thành công (qua mã QR VietQR PayOS hoặc qua Ví nội bộ), hệ thống iTick thực hiện cơ chế ghi có tức thời (Instant Crediting): <strong>Khoản tiền 95% tương ứng với doanh thu thuần được cộng ngay lập tức vào Số dư ví của tài khoản Ban Tổ Chức</strong>.
+          </p>
+          <div class="p-3.5 bg-blue-50/60 rounded-lg border border-blue-100 text-blue-900 space-y-1">
+            <span class="font-bold">Đẳng thức bảo toàn dòng tiền đối soát toàn sàn:</span>
+            <div class="font-mono text-xs font-semibold text-blue-800">
+              Tổng_Thu_Khách = Phí_Sàn_iTick + Doanh_Thu_Ví_BTC + Tiền_Hoàn_Trả (Độ lệch đối soát = 0 VNĐ)
+            </div>
+          </div>
+          <p>
+            Ban Tổ Chức có thể theo dõi biến động số dư, danh sách từng người mua vé và chi tiết từng giao dịch tại mục <strong>Quản Lý Người Đăng Ký Theo Từng Sự Kiện</strong> trong trang quản trị.
+          </p>
+        </div>
+      </section>
+
+      <!-- MỤC 4: HOÀN TIỀN & HỦY VÉ -->
+      <section id="muc-4" class="bg-white p-6 sm:p-8 rounded-xl border border-slate-200/90 shadow-xs space-y-4">
+        <div class="flex items-center gap-3">
+          <span class="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 font-bold flex items-center justify-center text-sm">4</span>
+          <h2 class="text-lg font-bold text-slate-900 tracking-tight">Chính Sách Hoàn Tiền, Hủy Vé & Xử Lý Tranh Chấp</h2>
+        </div>
+        <div class="space-y-3 text-xs text-slate-600 leading-relaxed">
+          <h4 class="font-bold text-sm text-slate-900">4.1. Quy Định Hủy Vé Do Người Mua Chủ Động</h4>
+          <p>Để đảm bảo công bằng cho Ban Tổ Chức trong công tác chuẩn bị sự kiện, iTick áp dụng biểu phí phạt hủy vé lũy tiến theo mốc thời gian:</p>
+          <ul class="list-disc list-inside space-y-1 text-slate-700">
+            <li><strong>Hủy trước $\ge 48$ giờ:</strong> Khách được hoàn 90% giá vé, phí phạt 10% (BTC nhận 10% phí phạt bồi hoàn).</li>
+            <li><strong>Hủy từ $24$ đến $< 48$ giờ:</strong> Khách được hoàn 70% giá vé, phí phạt 30% (BTC nhận 30% phí phạt bồi hoàn).</li>
+            <li><strong>Dưới $24$ giờ trước giờ bắt đầu:</strong> Hệ thống tự động khóa tính năng hủy vé để bảo vệ BTC, khách không được hoàn tiền.</li>
+          </ul>
+
+          <h4 class="font-bold text-sm text-slate-900 pt-2">4.2. Hủy Vé Khẩn Cấp Bởi Quản Trị Viên (Superadmin Intervention)</h4>
+          <div class="p-3.5 bg-rose-50 border border-rose-200 rounded-lg text-rose-900 space-y-1.5">
+            <div class="font-bold">Quyền hạn can thiệp bảo vệ người dùng của Admin:</div>
+            <p>
+              Trong trường hợp sự kiện bị đình chỉ do vi phạm quy chế, thay đổi lịch trình bất khả kháng hoặc xảy ra tranh chấp gian lận nghiêm trọng, Superadmin có toàn quyền thực hiện <strong>Hủy đơn & Hoàn tiền 100% cho người mua</strong>. Khi đó:
+            </p>
+            <ul class="list-disc list-inside space-y-0.5 text-[11px]">
+              <li>Khách hàng được hoàn trả đủ 100% số tiền đã thanh toán.</li>
+              <li>Hệ thống tự động thu hồi lại đúng khoản tiền doanh thu thuần đã chuyển vào ví của BTC.</li>
+              <li>iTick hoàn trả toàn bộ phần phí dịch vụ nền tảng 5% đã ghi nhận.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- MỤC 5: KIỂM DUYỆT & ĐĂNG SỰ KIỆN -->
+      <section id="muc-5" class="bg-white p-6 sm:p-8 rounded-xl border border-slate-200/90 shadow-xs space-y-4">
+        <div class="flex items-center gap-3">
+          <span class="w-8 h-8 rounded-lg bg-purple-50 text-purple-700 font-bold flex items-center justify-center text-sm">5</span>
+          <h2 class="text-lg font-bold text-slate-900 tracking-tight">Tiêu Chuẩn Đăng Tải & Cơ Chế Phê Duyệt Tự Động (Auto-Approval)</h2>
+        </div>
+        <div class="space-y-3 text-xs text-slate-600 leading-relaxed">
+          <p>
+            Để hỗ trợ Ban Tổ Chức mở bán vé nhanh chóng nhất, iTick áp dụng cơ chế <strong>Tự Động Phê Duyệt (Auto-Approval)</strong>: Sự kiện đáp ứng đầy đủ cấu trúc dữ liệu hợp lệ sẽ được chuyển thẳng sang trạng thái <code>PUBLISHED</code> và xuất hiện công khai trên trang chủ ngay sau khi tạo.
+          </p>
+          <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-lg space-y-2">
+            <span class="font-bold text-slate-900">Ban Tổ Chức cam kết tuân thủ các quy tắc kiểm duyệt:</span>
+            <ul class="list-disc list-inside space-y-1 text-slate-700">
+              <li><strong>Thời gian tổ chức:</strong> Thời gian bắt đầu phải diễn ra trong tương lai, cách thời điểm đăng tối thiểu 15 phút.</li>
+              <li><strong>Sức chứa địa điểm:</strong> Tổng số lượng vé các hạng vé không được vượt quá sức chứa tối đa của địa điểm (10 - 10,000 vé). Nghiêm cấm hành vi bán khống vượt sức chứa.</li>
+              <li><strong>Quy định đóng cổng bán vé:</strong> Cổng bán vé trực tuyến sẽ <strong>tự động đóng trước giờ khai mạc 15 phút</strong> để BTC chốt danh sách khách.</li>
+              <li><strong>Quy định ẩn bài đăng:</strong> Sự kiện sẽ <strong>tự động ẩn khỏi Trang chủ sau 10 phút kể từ lúc đóng cổng vé</strong> nhằm giữ cho danh sách sự kiện luôn mới và không hiển thị bài đăng đã hết hạn.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- MỤC 6: SOÁT VÉ TẠI CỔNG -->
+      <section id="muc-6" class="bg-white p-6 sm:p-8 rounded-xl border border-slate-200/90 shadow-xs space-y-4">
+        <div class="flex items-center gap-3">
+          <span class="w-8 h-8 rounded-lg bg-teal-50 text-teal-700 font-bold flex items-center justify-center text-sm">6</span>
+          <h2 class="text-lg font-bold text-slate-900 tracking-tight">Trách Nhiệm Soát Vé Tại Cổng Sự Kiện (Check-in Scanner)</h2>
+        </div>
+        <p class="text-xs text-slate-600 leading-relaxed">
+          Ban Tổ Chức được cung cấp miễn phí công cụ máy soát vé điện tử tại địa chỉ <code>/checkin-gate</code>. BTC có nghĩa vụ:
+        </p>
+        <ul class="list-disc list-inside space-y-1 text-xs text-slate-700">
+          <li>Bố trí nhân sự soát vé và kiểm tra mã vé (hoặc quét mã QR) trước khi cho khách vào cửa.</li>
+          <li>Xử lý nghiêm các trường hợp vé báo động đỏ (Vé đã sử dụng, vé đã hủy hoàn tiền hoặc vé không thuộc sự kiện).</li>
+          <li>Không được phép từ chối cho khách có vé hợp lệ (trạng thái <code>CONFIRMED</code>) vào tham dự sự kiện.</li>
+        </ul>
+      </section>
+
+      <!-- MỤC 7: CHẾ TÀI XỬ LÝ VI PHẠM -->
+      <section id="muc-7" class="bg-white p-6 sm:p-8 rounded-xl border border-slate-200/90 shadow-xs space-y-4">
+        <div class="flex items-center gap-3">
+          <span class="w-8 h-8 rounded-lg bg-rose-50 text-rose-700 font-bold flex items-center justify-center text-sm">7</span>
+          <h2 class="text-lg font-bold text-slate-900 tracking-tight">Chế Tài & Xử Lý Vi Phạm</h2>
+        </div>
+        <div class="space-y-2 text-xs text-slate-600 leading-relaxed">
+          <p>
+            Mọi hành vi vi phạm đạo đức kinh doanh, đăng tải sự kiện lừa đảo, phát tán nội dung phản cảm hoặc cố tình vi phạm bản quyền sẽ bị xử lý theo các cấp độ:
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+            <div class="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              <span class="font-bold text-amber-900 block text-xs">Mức 1: Đình Chỉ</span>
+              <span class="text-[11px] text-amber-800">Tạm ẩn hoặc đình chỉ bài đăng sự kiện công khai trên sàn.</span>
+            </div>
+            <div class="p-3 bg-rose-50 border border-rose-200 rounded-lg">
+              <span class="font-bold text-rose-900 block text-xs">Mức 2: Khóa Tài Khoản</span>
+              <span class="text-[11px] text-rose-800">Khóa tài khoản Ban Tổ Chức vĩnh viễn và đóng băng số dư ví vi phạm.</span>
+            </div>
+            <div class="p-3 bg-red-100 border border-red-300 rounded-lg">
+              <span class="font-bold text-red-950 block text-xs">Mức 3: Pháp Luật</span>
+              <span class="text-[11px] text-red-900">Chuyển giao bằng chứng sang cơ quan điều tra nếu có dấu hiệu tội phạm.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- MỤC 8: CAM KẾT & CHẤP THUẬN -->
+      <section id="muc-8" class="bg-gradient-to-r from-slate-50 to-indigo-50/40 p-6 sm:p-8 rounded-xl border border-indigo-100 shadow-xs space-y-4">
+        <div class="flex items-center gap-3">
+          <span class="w-8 h-8 rounded-lg bg-[#000080] text-white font-bold flex items-center justify-center text-sm">8</span>
+          <h2 class="text-lg font-bold text-slate-900 tracking-tight">Hiệu Lực & Cam Kết Tuân Thủ</h2>
+        </div>
+        <p class="text-xs text-slate-700 leading-relaxed">
+          Bằng việc tiếp tục đăng ký tài khoản Ban Tổ Chức, khởi tạo hoặc chỉnh sửa sự kiện trên iTick, quý đối tác khẳng định đã đọc, hiểu rõ và hoàn toàn chấp thuận các quy định về phí sàn 5%, chính sách phân bổ dòng tiền và các quy tắc vận hành nêu trên.
+        </p>
+        <div class="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-indigo-100/80">
+          <span class="text-xs text-slate-500 italic">
+            Cập nhật lần cuối: Tháng 10/2026 bởi Ban Quản Trị iTick
+          </span>
+          <a href="/organizer" class="px-5 py-2.5 bg-[#000080] hover:bg-[#001B5E] text-white font-bold text-xs rounded-md shadow-sm transition-colors text-center w-full sm:w-auto">
+            Tôi Đã Hiểu & Đi Đến Trang Quản Trị →
+          </a>
+        </div>
+      </section>
+
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

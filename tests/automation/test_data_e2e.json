@@ -1,0 +1,25 @@
+{
+  "baseUrl": "http://127.0.0.1:8001",
+  "attendee": {
+    "email": "attendee@eventtick.com",
+    "password": "att123",
+    "fullName": "Nguyễn Văn A"
+  },
+  "organizer": {
+    "email": "organizer@eventtick.com",
+    "password": "org123",
+    "fullName": "Ban Tổ Chức TechFest"
+  },
+  "bookingFlow": {
+    "eventId": 1,
+    "tierId": 2,
+    "eventUrl": "/events/1",
+    "expectedSuccessUrl": "/booking-success",
+    "quantity": 1
+  },
+  "checkinFlow": {
+    "checkinUrl": "/checkin-gate",
+    "organizerUrl": "/organizer",
+    "ticketCode": "TICK-2026-MOCK01"
+  }
+}

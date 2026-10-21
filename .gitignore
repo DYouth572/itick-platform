@@ -1,0 +1,26 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Caches
+.pytest_cache/
+.claude/
+
+# Environment files (do not commit secrets)
+.env
+jmeter.log
+
+# Local SQLite databases (production uses Neon PostgreSQL)
+*.db
+*.sqlite3
+
+# Temporary scratch and test output files
+scratch/
+scratch_*
+test_*.xlsx
+test_*.html
+
+# OS generated files
+.DS_Store
+Thumbs.db

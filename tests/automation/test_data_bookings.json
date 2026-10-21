@@ -1,0 +1,42 @@
+[
+  {
+    "scenario": "TC_DATA_01_Normal",
+    "event_id": 1,
+    "tier_id": 1,
+    "quantity": 1,
+    "voucher_code": "",
+    "expected_status": 200
+  },
+  {
+    "scenario": "TC_DATA_02_Valid_Voucher",
+    "event_id": 1,
+    "tier_id": 1,
+    "quantity": 2,
+    "voucher_code": "GIAM50K",
+    "expected_status": 200
+  },
+  {
+    "scenario": "TC_DATA_03_Max_Cap_Voucher",
+    "event_id": 1,
+    "tier_id": 2,
+    "quantity": 4,
+    "voucher_code": "GIAM20",
+    "expected_status": 200
+  },
+  {
+    "scenario": "TC_DATA_04_Negative_Zero_Tickets",
+    "event_id": 1,
+    "tier_id": 1,
+    "quantity": 0,
+    "voucher_code": "",
+    "expected_status": 422
+  },
+  {
+    "scenario": "TC_DATA_05_Negative_Crash_Quote",
+    "event_id": 1,
+    "tier_id": 1,
+    "quantity": 1,
+    "voucher_code": "GIAM'20",
+    "expected_status": 422
+  }
+]

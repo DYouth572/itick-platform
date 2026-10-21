@@ -1,0 +1,416 @@
+{% extends "base.html" %}
+
+{% block title %}{{ event.title }} - iTick{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+    <!-- LEFT COLUMN: EVENT DETAILS & INFORMATION (2 Cols) -->
+    <div class="lg:col-span-2 space-y-6">
+      
+      <!-- Banner Card -->
+      <div class="bg-white/95 dark:bg-[#0B172A]/90 backdrop-blur-sm rounded-md border border-slate-200/80 dark:border-slate-800/80 overflow-hidden shadow-sm transition-colors">
+        <div class="relative w-full h-72 sm:h-96 bg-slate-100 dark:bg-slate-800 overflow-hidden rounded-t-md img-inset-ring">
+          <img 
+            src="{{ event.banner_url }}" 
+            alt="{{ event.title }}" 
+            class="w-full h-full object-cover"
+          />
+        </div>
+        <div class="p-6 sm:p-8 space-y-4">
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight text-balance">
+            {{ event.title }}
+          </h1>
+
+          {% if event.is_sales_closed %}
+            <!-- CẢNH BÁO ĐÃ HẾT THỜI GIAN MUA VÉ -->
+            <div class="p-4 rounded-md bg-rose-50 dark:bg-rose-950/40 border-l-4 border-rose-600 text-rose-900 dark:text-rose-200 flex items-start gap-3">
+              <svg class="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+              </svg>
+              <div>
+                <strong class="font-bold text-sm block">CỔNG BÁN VÉ ĐÃ ĐÓNG</strong>
+                <p class="text-xs text-rose-700 dark:text-rose-300 mt-0.5">Sự kiện đã kết thúc thời hạn mua vé vào lúc <strong>{{ event.sales_deadline.strftime("%H:%M ngày %d/%m/%Y") }}</strong>. Quý khách không thể tạo đơn đặt vé mới cho sự kiện này.</p>
+              </div>
+            </div>
+          {% endif %}
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-sm text-slate-600 dark:text-slate-300">
+            <!-- Thời gian diễn ra -->
+            <div class="flex items-start gap-3 p-3.5 rounded-md bg-slate-50/80 dark:bg-slate-800/60 border border-slate-100/80 dark:border-slate-700/60">
+              <div class="w-8 h-8 rounded-md bg-slate-200/60 dark:bg-slate-700/60 flex items-center justify-center shrink-0 text-slate-600 dark:text-slate-300">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+              </div>
+              <div class="min-w-0 flex-1">
+                <span class="font-semibold text-slate-900 dark:text-slate-100 block text-xs">Thời gian diễn ra</span>
+                <span class="tabular-nums text-xs text-slate-600 dark:text-slate-400 font-medium leading-relaxed">{{ event.start_time.strftime("%H:%M ngày %d/%m/%Y") }}</span>
+              </div>
+            </div>
+
+            <!-- Thời gian đóng mua vé -->
+            <div class="flex items-start gap-3 p-3.5 rounded-md bg-slate-50/80 dark:bg-slate-800/60 border border-slate-100/80 dark:border-slate-700/60">
+              <div class="w-8 h-8 rounded-md {% if event.is_sales_closed %}bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400{% else %}bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400{% endif %} flex items-center justify-center shrink-0">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <div class="min-w-0 flex-1">
+                <span class="font-semibold text-slate-900 dark:text-slate-100 block text-xs">Thời gian đóng mua vé</span>
+                {% if event.is_sales_closed %}
+                  <span class="tabular-nums text-xs font-bold text-rose-600 dark:text-rose-400 leading-relaxed">Đã đóng lúc {{ event.sales_deadline.strftime("%H:%M") }}</span>
+                {% else %}
+                  <span class="tabular-nums text-xs text-slate-700 dark:text-slate-300 font-medium leading-relaxed">{{ event.sales_deadline.strftime("%H:%M ngày %d/%m/%Y") }}</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Địa điểm -->
+            <div class="flex items-start gap-3 p-3.5 rounded-md bg-slate-50/80 dark:bg-slate-800/60 border border-slate-100/80 dark:border-slate-700/60">
+              <div class="w-8 h-8 rounded-md bg-slate-200/60 dark:bg-slate-700/60 flex items-center justify-center shrink-0 text-slate-600 dark:text-slate-300">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+              </div>
+              <div class="min-w-0 flex-1">
+                <span class="font-semibold text-slate-900 dark:text-slate-100 block text-xs">Địa điểm</span>
+                <span class="text-xs text-slate-700 dark:text-slate-300 font-medium break-words leading-relaxed block">{{ event.location }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- === SEED-11: BUG NỘI DUNG MÂU THUẪN CHÍNH SÁCH HOÀN HỦY === -->
+          <div class="p-4 rounded-md bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50 flex items-start gap-3 text-xs text-amber-800 dark:text-amber-300">
+            <svg class="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            <div>
+              <span class="font-bold block">Quy định hoàn tiền sự kiện</span>
+              <!-- LỖI SEED-11: Ghi sai chính sách hoàn tiền mâu thuẫn trực tiếp với SRS -->
+              <span>Chính sách: Hoàn 100% nếu hủy trước 1 ngày. Khách hàng vui lòng xuất trình vé điện tử khi vào cổng.</span>
+            </div>
+          </div>
+
+          <!-- Description Section -->
+          <div class="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Giới thiệu chương trình</h2>
+            <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed whitespace-pre-line text-pretty">
+              {{ event.description }}
+            </p>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN: TICKET BOOKING FORM (1 Col Sticky) -->
+    <div class="space-y-6">
+      
+      <div class="bg-white/95 dark:bg-[#0B172A]/90 backdrop-blur-sm rounded-md border border-slate-200/80 dark:border-slate-800/80 shadow-md p-6 sticky top-24 space-y-6 transition-colors">
+        <div class="border-b border-slate-100 dark:border-slate-800 pb-4">
+          <h2 class="text-lg font-bold text-slate-900 dark:text-white">Chọn Vé Tham Dự</h2>
+          <p class="text-xs text-slate-600 dark:text-slate-400">Mỗi đơn hàng được chọn tối đa từ 1 đến 5 vé</p>
+        </div>
+
+        <form id="bookingForm" onsubmit="handleBooking(event)" class="space-y-5">
+          <input type="hidden" id="eventId" value="{{ event.id }}">
+
+          <!-- TICKET TIERS SELECTION -->
+          <div class="space-y-3">
+            <label class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block">Phân hạng vé</label>
+            
+            {% for tier in event.tiers %}
+              <!-- === SEED-06: VÉ HẾT CHỖ NHƯNG VẪN BẤM CHỌN ĐƯỢC (KHÔNG BỊ DISABLED) === -->
+              <label class="relative flex items-start p-3.5 rounded-md border border-slate-200 dark:border-slate-700/80 cursor-pointer hover:border-[#000080]/40 dark:hover:border-sky-400/40 hover:bg-[#F0F5FC]/60 dark:hover:bg-slate-800/50 transition-colors btn-tactile group">
+                <div class="flex items-center h-5">
+                  <!-- LỖI SEED-06: Không có disabled attribute ngay cả khi available_quantity == 0 -->
+                  <input 
+                    type="radio" 
+                    name="tier_id" 
+                    value="{{ tier.id }}" 
+                    data-price="{{ tier.price }}" 
+                    data-available="{{ tier.available_quantity }}" 
+                    class="h-4 w-4 text-[#000080] border-slate-300 dark:border-slate-600 dark:bg-slate-800 focus:ring-[#000080]" 
+                    {% if loop.first and tier.available_quantity > 0 %}checked{% endif %}
+                  />
+                </div>
+                <div class="ml-3 flex-1 flex justify-between items-center text-xs">
+                  <div>
+                    <span class="font-bold text-slate-900 dark:text-slate-100 group-hover:text-[#000080] dark:group-hover:text-sky-300 block">{{ tier.name }}</span>
+                    {% if tier.available_quantity == 0 %}
+                      <!-- Vẫn hiển thị nhãn hết vé nhưng radio button không bị disabled! -->
+                      <span class="text-[10px] text-red-700 dark:text-red-400 font-semibold">Hết vé (0 vé còn lại)</span>
+                    {% else %}
+                      <span class="text-[10px] text-slate-600 dark:text-slate-400">Còn <span class="font-semibold text-emerald-600 dark:text-emerald-400">{{ tier.available_quantity }}</span> vé</span>
+                    {% endif %}
+                  </div>
+                  <span class="font-bold font-mono text-[#000080] dark:text-sky-300 text-sm tabular-nums">
+                    {{ "{:,.0f}".format(tier.price) }}đ
+                  </span>
+                </div>
+              </label>
+            {% endfor %}
+          </div>
+
+          <!-- QUANTITY SELECTOR -->
+          <div class="space-y-2">
+            <label class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block">Số lượng vé</label>
+            <div class="flex items-center gap-3">
+              <input 
+                type="number" 
+                id="quantityInput" 
+                value="1" 
+                min="0" 
+                max="5" 
+                class="w-24 px-3 py-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-md text-sm font-semibold text-slate-900 dark:text-white text-center tabular-nums focus:ring-2 focus:ring-[#000080]/40 focus:outline-none transition-colors"
+                onchange="recalculateTotal()"
+              />
+              <span class="text-xs text-slate-500 dark:text-slate-400">(Tối đa 5 vé / đơn)</span>
+            </div>
+          </div>
+
+          <!-- VOUCHER CODE INPUT -->
+          <div class="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+            <label class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block">Mã giảm giá (Voucher)</label>
+            <div class="flex gap-2">
+              <input 
+                type="text" 
+                id="voucherInput" 
+                placeholder="Ví dụ: GIAM20" 
+                class="flex-1 uppercase px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-md text-xs font-mono tracking-wider text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-[#000080]/40 focus:outline-none transition-colors"
+              />
+              <button 
+                type="button" 
+                onclick="applyVoucher()" 
+                class="px-4 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-[#F0F5FC] dark:hover:bg-slate-700 text-slate-700 hover:text-[#000080] dark:text-slate-200 text-xs font-semibold rounded-md btn-tactile"
+              >
+                Áp dụng
+              </button>
+            </div>
+            <!-- Thông báo Voucher (Hiển thị SEED-10 khi sai) -->
+            <p id="voucherMsg" class="text-xs hidden"></p>
+          </div>
+
+          <!-- PAYMENT METHOD INFO -->
+          <div class="space-y-1.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+            <label class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block">
+              Phương thức thanh toán
+            </label>
+            <input type="hidden" id="paymentMethodInput" name="payment_method" value="VIETQR_PAYOS" />
+            <div class="flex items-center justify-between p-3 rounded-md border border-[#000080]/30 dark:border-sky-500/40 bg-blue-50/40 dark:bg-sky-950/20">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-md bg-[#000080]/10 dark:bg-sky-400/10 flex items-center justify-center text-[#000080] dark:text-sky-300 shrink-0">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                  </svg>
+                </div>
+                <div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-xs font-bold text-slate-900 dark:text-white">Chuyển khoản VietQR (PayOS)</span>
+                    <span class="px-1.5 py-0.5 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold rounded-xs">Napas 24/7</span>
+                  </div>
+                  <p class="text-[11px] text-slate-500 dark:text-slate-400">Quét mã QR bằng mọi App Ngân hàng (MB, VCB, BIDV, Techcom...)</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-1 shrink-0">
+                <span class="text-[10px] font-bold font-mono text-emerald-600 dark:text-emerald-400">Tự động 1s</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ORDER SUMMARY -->
+          <div class="p-4 rounded-md bg-slate-50/80 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/60 space-y-1.5 text-xs text-slate-600 dark:text-slate-400">
+            <div class="flex justify-between">
+              <span>Tạm tính:</span>
+              <span id="originalTotal" class="font-mono tabular-nums font-medium text-slate-900 dark:text-slate-100">0đ</span>
+            </div>
+            <div class="flex justify-between text-emerald-600 dark:text-emerald-400 font-medium">
+              <span>Giảm giá Voucher:</span>
+              <span id="discountTotal" class="font-mono tabular-nums">-0đ</span>
+            </div>
+            <div class="flex justify-between text-sm font-bold text-slate-900 dark:text-white pt-2 border-t border-slate-200 dark:border-slate-700">
+              <span>Tổng thanh toán:</span>
+              <span id="finalTotal" class="font-mono tabular-nums text-[#000080] dark:text-sky-300 text-base">0đ</span>
+            </div>
+          </div>
+
+          <!-- SUBMIT CTA -->
+          {% if event.is_sales_closed %}
+            <div class="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 text-rose-700 dark:text-rose-300 text-xs text-center font-bold rounded-md">
+              Cổng đặt vé đã đóng do đã kết thúc thời hạn mua vé.
+            </div>
+            <button 
+              type="button" 
+              disabled 
+              id="submitBtn"
+              class="w-full py-3.5 px-4 bg-slate-100 dark:bg-slate-800 text-rose-600 dark:text-rose-400 font-bold text-sm rounded-md border border-rose-200 dark:border-rose-900/50 cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              <svg class="w-4 h-4 text-rose-500 dark:text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <span>ĐÃ HẾT THỜI GIAN MUA VÉ</span>
+            </button>
+          {% elif current_user %}
+            <button 
+              type="submit" 
+              id="submitBtn"
+              class="w-full py-3.5 px-4 bg-[#000080] hover:bg-[#001B5E] dark:bg-[#1E60D5] dark:hover:bg-[#0D47A1] text-white font-bold text-sm rounded-md shadow-md btn-tactile flex items-center justify-center gap-2"
+            >
+              <span>Xác nhận Đặt vé Ngay</span> →
+            </button>
+          {% else %}
+            <a 
+              href="/login?redirect=/events/{{ event.id }}" 
+              class="w-full py-3.5 px-4 bg-[#000080] hover:bg-[#001B5E] dark:bg-[#1E60D5] dark:hover:bg-[#0D47A1] text-white font-bold text-sm rounded-md shadow-md btn-tactile flex items-center justify-center gap-2 block text-center"
+            >
+              <span>Đăng nhập để Đặt vé</span> →
+            </a>
+          {% endif %}
+
+        </form>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  let appliedDiscount = 0;
+  let activeVoucherCode = "";
+
+  function getSelectedTier() {
+    const selected = document.querySelector('input[name="tier_id"]:checked');
+    if (!selected) return null;
+    return {
+      id: parseInt(selected.value),
+      price: parseFloat(selected.dataset.price),
+      available: parseInt(selected.dataset.available)
+    };
+  }
+
+  function recalculateTotal() {
+    const tier = getSelectedTier();
+    const qtyInput = document.getElementById('quantityInput');
+    const qty = parseInt(qtyInput.value) || 0;
+
+    if (!tier) return;
+
+    const original = tier.price * qty;
+    const final = Math.max(0, original - appliedDiscount);
+
+    document.getElementById('originalTotal').innerText = new Intl.NumberFormat('vi-VN').format(original) + 'đ';
+    document.getElementById('discountTotal').innerText = '-' + new Intl.NumberFormat('vi-VN').format(appliedDiscount) + 'đ';
+    document.getElementById('finalTotal').innerText = new Intl.NumberFormat('vi-VN').format(final) + 'đ';
+  }
+
+  async function applyVoucher() {
+    const code = document.getElementById('voucherInput').value.trim();
+    const tier = getSelectedTier();
+    const qty = parseInt(document.getElementById('quantityInput').value) || 1;
+    const msgEl = document.getElementById('voucherMsg');
+
+    if (!code) {
+      msgEl.innerText = "Vui lòng nhập mã giảm giá";
+      msgEl.className = "text-xs text-red-600 block";
+      return;
+    }
+
+    const total = tier ? tier.price * qty : 0;
+
+    try {
+      const res = await fetch('/api/bookings/vouchers/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: code, order_total: total })
+      });
+      const data = await res.json();
+
+      if (data.is_valid) {
+        appliedDiscount = data.discount_amount;
+        activeVoucherCode = code;
+        msgEl.innerText = data.message;
+        msgEl.className = "text-xs text-emerald-600 font-medium block";
+      } else {
+        appliedDiscount = 0;
+        activeVoucherCode = "";
+        // === SEED-10: SẼ HIỂN THỊ THÔNG BÁO COPY-PASTE NHẦM TỪ BACKEND ===
+        msgEl.innerText = data.message;
+        msgEl.className = "text-xs text-red-600 font-medium block";
+      }
+      recalculateTotal();
+    } catch (err) {
+      msgEl.innerText = "Lỗi khi kiểm tra mã voucher";
+      msgEl.className = "text-xs text-red-600 block";
+    }
+  }
+
+  async function handleBooking(e) {
+    e.preventDefault();
+    {% if event.is_sales_closed %}
+    alert("Sự kiện này đã hết thời gian mua vé. Cổng bán vé đã chính thức đóng!");
+    return;
+    {% endif %}
+    const tier = getSelectedTier();
+    const eventId = parseInt(document.getElementById('eventId').value);
+    const qty = parseInt(document.getElementById('quantityInput').value);
+    const submitBtn = document.getElementById('submitBtn');
+    const paymentMethod = 'VIETQR_PAYOS';
+
+    if (!tier) {
+      alert("Vui lòng chọn một hạng vé!");
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.innerText = "Đang kết nối cổng VietQR...";
+
+    try {
+      const res = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event_id: eventId,
+          tier_id: tier.id,
+          quantity: qty,
+          voucher_code: activeVoucherCode || document.getElementById('voucherInput').value.trim() || null,
+          payment_method: paymentMethod
+        })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        if (data.checkout_url) {
+          // Chuyển hướng người dùng sang cổng thanh toán VietQR PayOS thật
+          window.location.href = data.checkout_url;
+        } else {
+          window.location.href = `/booking-success?order_code=${data.order_code}`;
+        }
+      } else {
+        alert("LỖI ĐẶT VÉ: " + (data.detail || "Không thể hoàn tất giao dịch"));
+        submitBtn.disabled = false;
+        submitBtn.innerText = "Xác nhận Đặt vé Ngay →";
+      }
+    } catch (err) {
+      alert("Lỗi kết nối máy chủ: " + err.message);
+      submitBtn.disabled = false;
+      submitBtn.innerText = "Xác nhận Đặt vé Ngay →";
+    }
+  }
+
+  // Khởi tạo tính toán ban đầu
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('input[name="tier_id"]').forEach(radio => {
+      radio.addEventListener('change', recalculateTotal);
+    });
+    recalculateTotal();
+  });
+</script>
+{% endblock %}
