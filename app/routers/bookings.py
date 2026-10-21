@@ -4,7 +4,7 @@ import secrets
 import time
 from datetime import datetime
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from app.auth import get_current_user
@@ -69,6 +69,7 @@ def apply_voucher(req: VoucherApplyRequest, db: Session = Depends(get_db)):
 
 @router.post("", response_model=OrderOut, status_code=status.HTTP_201_CREATED)
 def create_booking(
+    request: Request,
     booking_in: BookingCreate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -162,9 +163,20 @@ def create_booking(
     # === THANH TOÁN VIETQR PAYOS (NGÂN HÀNG THẬT) ===
     if method == "VIETQR_PAYOS" and final_total > 0:
         payos_order_code = int(time.time() * 100) % 90000000 + 10000000
-        port = os.environ.get("PORT", "8001")
-        return_url = f"http://127.0.0.1:{port}/api/payment/payos-return?order_code={order_code}&payos_code={payos_order_code}"
-        cancel_url = f"http://127.0.0.1:{port}/api/payment/payos-cancel?order_code={order_code}&payos_code={payos_order_code}"
+        # Xác định Base URL tự động (hỗ trợ cả domain Render/Cloud và localhost:8001)
+        base_url = os.environ.get("APP_BASE_URL")
+        if not base_url:
+            proto = request.headers.get("x-forwarded-proto") or request.url.scheme
+            host = request.headers.get("x-forwarded-host") or request.headers.get("host")
+            if host:
+                base_url = f"{proto}://{host}"
+            else:
+                port = os.environ.get("PORT", "8001")
+                base_url = f"http://127.0.0.1:{port}"
+        base_url = base_url.rstrip("/")
+
+        return_url = f"{base_url}/api/payment/payos-return?order_code={order_code}&payos_code={payos_order_code}"
+        cancel_url = f"{base_url}/api/payment/payos-cancel?order_code={order_code}&payos_code={payos_order_code}"
 
         payos_res = create_vietqr_payment_link(
             order_code_int=payos_order_code,
