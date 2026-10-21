@@ -26,3 +26,5 @@ test_*.html
 Thumbs.db
 
 node_modules/
+
+~$*

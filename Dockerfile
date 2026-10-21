@@ -24,5 +24,5 @@ COPY . /app/
 # Mở cổng 8000 cho FastAPI
 EXPOSE 8000
 
-# Chạy migrate schema Alembic và khởi động server Uvicorn
-CMD ["sh", "-c", "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port 8000"]
+# Chạy migrate schema Alembic và khởi động server Uvicorn (nhận cổng động $PORT từ Render/Koyeb)
+CMD ["sh", "-c", "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"]
