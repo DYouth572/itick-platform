@@ -101,6 +101,18 @@ def create_booking(
     if not event or event.status != "PUBLISHED":
         raise HTTPException(status_code=400, detail="Sự kiện không tồn tại hoặc chưa mở bán")
 
+    # BR-01: Giới hạn tối đa 10 vé cho cùng một sự kiện đối với mỗi tài khoản
+    existing_tickets_count = db.query(Ticket).filter(
+        Ticket.user_id == current_user.id,
+        Ticket.event_id == event.id,
+        Ticket.status != "CANCELLED"
+    ).count()
+    if existing_tickets_count + booking_in.quantity > 10:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Mỗi tài khoản chỉ được sở hữu tối đa 10 vé cho một sự kiện (Bạn đã có {existing_tickets_count} vé)"
+        )
+
     # Kiểm tra thời hạn đóng mua vé
     if event.is_sales_closed:
         raise HTTPException(

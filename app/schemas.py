@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 # --- AUTH SCHEMAS ---
 class UserRegister(BaseModel):
     full_name: str = Field(..., min_length=2, max_length=50)
-    email: str = Field(..., min_length=5, max_length=100)
+    email: str = Field(..., pattern=r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$", max_length=100)
     password: str = Field(..., min_length=6, max_length=32)
     role: str = Field(default="ATTENDEE", pattern="^(ATTENDEE|ORGANIZER)$")
     phone_number: Optional[str] = None

@@ -359,6 +359,29 @@ def search_tickets(
         "created_at": t.created_at.strftime("%d/%m/%Y %H:%M")
     } for t in tickets]
 
+@router.post("/tickets/{ticket_id}/void")
+def void_ticket(
+    ticket_id: int,
+    current_user: User = Depends(require_role(["ADMIN"])),
+    db: Session = Depends(get_db)
+):
+    """Admin vô hiệu hóa vé gian lận đơn lẻ (SRS FR-13.4 / URD US-14)"""
+    ticket = db.query(Ticket).filter(Ticket.id == ticket_id).first()
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Không tìm thấy vé")
+    
+    if ticket.status == "CANCELLED":
+        raise HTTPException(status_code=400, detail="Vé này đã bị hủy trước đó")
+    
+    ticket.status = "CANCELLED"
+    db.commit()
+    return {
+        "success": True,
+        "message": f"Đã vô hiệu hóa vé gian lận {ticket.ticket_code} thành công",
+        "ticket_code": ticket.ticket_code,
+        "status": ticket.status
+    }
+
 # ==========================================
 # 4. QUẢN LÝ MÃ GIẢM GIÁ (VOUCHERS)
 # ==========================================
