@@ -4,28 +4,48 @@
 - **Môn học**: Đánh giá hiệu năng / Kiểm thử phần mềm
 - **Mã tài liệu**: URD-ITICK-V1.2
 - **Phiên bản**: 1.2 (Đồng bộ Thương hiệu iTick, Cơ chế Thương mại Phí sàn 5%, Phê duyệt Tự động & Cổng Superadmin Toàn quyền)
-- **Tác giả (Chủ hệ thống)**: Sinh viên A
+- **Tác giả (Chủ hệ thống)**: Lại Thị Thanh Xuân – 23110309
 - **Hệ thống**: iTick - Modern Event & Conference Ticketing Platform
 - **Đối tượng bàn giao kiểm thử**: Sinh viên B (Tester)
 
 ---
 
+
+> **Deploy URL**: [https://itick-platform.onrender.com/](https://itick-platform.onrender.com/)  
+> **GitHub Repo**: [https://github.com/DYouth572/itick-platform](https://github.com/DYouth572/itick-platform)  
+> **Google Drive**: [https://drive.google.com/drive/folders/1K9Mq0RubxVY5YOycdWN-DqwUO4dmS-kc?usp=sharing](https://drive.google.com/drive/folders/1K9Mq0RubxVY5YOycdWN-DqwUO4dmS-kc?usp=sharing)
+
 ## 1. Bối cảnh, Mục tiêu & Phạm vi (Context, Objectives & Scope)
 
-### 1.1. Bối cảnh dự án (Context)
+#
+> **Deploy URL**: [https://itick-platform.onrender.com/](https://itick-platform.onrender.com/)  
+> **GitHub Repo**: [https://github.com/DYouth572/itick-platform](https://github.com/DYouth572/itick-platform)  
+> **Google Drive**: [https://drive.google.com/drive/folders/1K9Mq0RubxVY5YOycdWN-DqwUO4dmS-kc?usp=sharing](https://drive.google.com/drive/folders/1K9Mq0RubxVY5YOycdWN-DqwUO4dmS-kc?usp=sharing)
+
+## 1.1. Bối cảnh dự án (Context)
 Trong thời đại chuyển đổi số, nhu cầu tham dự các hội thảo công nghệ, sự kiện âm nhạc, workshop kỹ năng và hội nghị chuyên môn tăng trưởng mạnh mẽ. Nền tảng **iTick** được phát triển nhằm cung cấp một giải pháp web hiện đại, chuẩn RESTful API, cho phép:
 1. Ban tổ chức dễ dàng khởi tạo sự kiện, mở bán vé nhiều phân hạng và tự động kích hoạt công khai mở bán (Auto-Approval).
 2. Tích hợp cơ chế thương mại dịch vụ nền tảng minh bạch: Trích thu phí dịch vụ sàn hợp lý (mặc định 5%) để duy trì hạ tầng, đồng thời tự động phân bổ doanh thu thuần vào ví Ban tổ chức.
 3. Cung cấp cổng Quản trị Tối cao (Superadmin Control Center) toàn quyền giám sát người dùng, sự kiện, đơn hàng, kiểm soát đối soát dòng tiền và xử lý hoàn tiền khẩn cấp.
 4. Đảm bảo môi trường hoàn hảo cho môn học Kiểm thử phần mềm: Cài cắm các bài toán bẫy lỗi kinh điển (Làm tròn số tiền VND, Cạnh tranh tài nguyên Race Condition, Boundary Testing vé 0đ, Voucher đối soát).
 
-### 1.2. Mục tiêu dự án (Objectives)
+#
+> **Deploy URL**: [https://itick-platform.onrender.com/](https://itick-platform.onrender.com/)  
+> **GitHub Repo**: [https://github.com/DYouth572/itick-platform](https://github.com/DYouth572/itick-platform)  
+> **Google Drive**: [https://drive.google.com/drive/folders/1K9Mq0RubxVY5YOycdWN-DqwUO4dmS-kc?usp=sharing](https://drive.google.com/drive/folders/1K9Mq0RubxVY5YOycdWN-DqwUO4dmS-kc?usp=sharing)
+
+## 1.2. Mục tiêu dự án (Objectives)
 1. **Đối với người tham dự**: Tra cứu sự kiện dễ dàng, đặt mua vé an toàn, nhận mã vé điện tử tức thì và hỗ trợ hủy vé minh bạch theo chính sách thời gian.
 2. **Đối với ban tổ chức**: Tự chủ khởi tạo sự kiện mở bán ngay lập tức (không bị ách tắc chờ duyệt), theo dõi doanh thu thực nhận vào ví điện tử sau khi trừ phí sàn minh bạch.
 3. **Đối với Quản trị viên (Superadmin)**: Nắm toàn quyền quản trị người dùng, phân quyền (RBAC), kiểm duyệt sự kiện, hủy đơn hoàn tiền khẩn cấp và cấu hình tỷ lệ phí sàn linh hoạt.
 4. **Đối với môn học Kiểm thử & Đánh giá hiệu năng**: Cung cấp ứng dụng có 37 API Endpoints chuẩn mực, hỗ trợ đo kiểm tải cao điểm (JMeter) và kiểm thử tự động toàn diện (20/20 Test Cases PASSED).
 
-### 1.3. Phạm vi hệ thống (Scope)
+#
+> **Deploy URL**: [https://itick-platform.onrender.com/](https://itick-platform.onrender.com/)  
+> **GitHub Repo**: [https://github.com/DYouth572/itick-platform](https://github.com/DYouth572/itick-platform)  
+> **Google Drive**: [https://drive.google.com/drive/folders/1K9Mq0RubxVY5YOycdWN-DqwUO4dmS-kc?usp=sharing](https://drive.google.com/drive/folders/1K9Mq0RubxVY5YOycdWN-DqwUO4dmS-kc?usp=sharing)
+
+## 1.3. Phạm vi hệ thống (Scope)
 - **Trong phạm vi (In-Scope)**:
   - Quản trị tài khoản và phân quyền người dùng (Khách vãng lai, Người tham dự, Ban tổ chức, Quản trị viên).
   - Khám phá, tìm kiếm và lọc sự kiện theo từ khóa, danh mục.
@@ -56,7 +76,12 @@ Hệ thống định nghĩa **3 vai trò người dùng chính** và **1 vai tr�
 
 ### FLOW-01: Khám phá Sự kiện, Đặt mua Vé, Tính Phí Sàn & Phân Bổ Doanh Thu
 
-#### 1. Mô tả chi tiết nghiệp vụ từ góc nhìn người dùng
+##
+> **Deploy URL**: [https://itick-platform.onrender.com/](https://itick-platform.onrender.com/)  
+> **GitHub Repo**: [https://github.com/DYouth572/itick-platform](https://github.com/DYouth572/itick-platform)  
+> **Google Drive**: [https://drive.google.com/drive/folders/1K9Mq0RubxVY5YOycdWN-DqwUO4dmS-kc?usp=sharing](https://drive.google.com/drive/folders/1K9Mq0RubxVY5YOycdWN-DqwUO4dmS-kc?usp=sharing)
+
+## 1. Mô tả chi tiết nghiệp vụ từ góc nhìn người dùng
 - **Điểm bắt đầu**: Người dùng mở trang chủ iTick, tìm kiếm và chọn sự kiện yêu thích.
 - **Bước 1 - Chọn vé & Số lượng**: Người dùng chọn hạng vé và số lượng (1 - 5 vé).
 - **Bước 2 - Áp dụng Voucher (nếu có)**: Nhập mã giảm giá. Hệ thống thẩm định điều kiện và tính chiết khấu hợp lệ.
@@ -101,7 +126,12 @@ flowchart TD
 
 ### FLOW-02: Ban tổ chức Tạo sự kiện & Tự động Phê duyệt Mở bán (Auto-Approval Flow)
 
-#### 1. Mô tả chi tiết nghiệp vụ từ góc nhìn người dùng
+##
+> **Deploy URL**: [https://itick-platform.onrender.com/](https://itick-platform.onrender.com/)  
+> **GitHub Repo**: [https://github.com/DYouth572/itick-platform](https://github.com/DYouth572/itick-platform)  
+> **Google Drive**: [https://drive.google.com/drive/folders/1K9Mq0RubxVY5YOycdWN-DqwUO4dmS-kc?usp=sharing](https://drive.google.com/drive/folders/1K9Mq0RubxVY5YOycdWN-DqwUO4dmS-kc?usp=sharing)
+
+## 1. Mô tả chi tiết nghiệp vụ từ góc nhìn người dùng
 - Ban tổ chức đăng nhập, vào mục "Quản lý sự kiện" $\rightarrow$ "Tạo sự kiện mới".
 - Nhập thông tin: Tiêu đề, danh mục, thời gian tổ chức, địa điểm, sức chứa và ảnh banner.
 - **Cơ chế Tự động Phê duyệt (Auto-Approval)**: Hệ thống tự động kiểm tra các ràng buộc dữ liệu. Nếu hợp lệ, sự kiện lập tức nhận trạng thái `PUBLISHED` và kích hoạt hiển thị `is_visible = True` để mở bán ngay cho khách hàng, không còn cảnh chờ duyệt thủ công.

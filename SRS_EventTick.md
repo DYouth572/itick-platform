@@ -4,18 +4,33 @@
 - **Môn học**: Đánh giá hiệu năng / Kiểm thử phần mềm
 - **Mã hệ thống**: ITICK-V1.2
 - **Phiên bản tài liệu**: 1.2 (Bổ sung Cơ chế Phí Dịch vụ Sàn 5%, Phê duyệt Tự động & Superadmin Toàn quyền)
-- **Tác giả (Chủ hệ thống)**: Sinh viên A
+- **Tác giả (Chủ hệ thống)**: Lại Thị Thanh Xuân – 23110309
 - **Tester phản biện**: Sinh viên B
 - **Căn cứ phát triển**: Kế thừa trực tiếp từ [URD_EventTick.md](file:///d:/SJ_Testing/Project/URD_EventTick.md)
 
 ---
 
+
+> **Deploy URL**: [https://itick-platform.onrender.com/](https://itick-platform.onrender.com/)  
+> **GitHub Repo**: [https://github.com/DYouth572/itick-platform](https://github.com/DYouth572/itick-platform)  
+> **Google Drive**: [https://drive.google.com/drive/folders/1K9Mq0RubxVY5YOycdWN-DqwUO4dmS-kc?usp=sharing](https://drive.google.com/drive/folders/1K9Mq0RubxVY5YOycdWN-DqwUO4dmS-kc?usp=sharing)
+
 ## 1. Giới thiệu & Tổng quan Hệ thống (Introduction & System Overview)
 
-### 1.1. Mục đích tài liệu (Purpose)
+#
+> **Deploy URL**: [https://itick-platform.onrender.com/](https://itick-platform.onrender.com/)  
+> **GitHub Repo**: [https://github.com/DYouth572/itick-platform](https://github.com/DYouth572/itick-platform)  
+> **Google Drive**: [https://drive.google.com/drive/folders/1K9Mq0RubxVY5YOycdWN-DqwUO4dmS-kc?usp=sharing](https://drive.google.com/drive/folders/1K9Mq0RubxVY5YOycdWN-DqwUO4dmS-kc?usp=sharing)
+
+## 1.1. Mục đích tài liệu (Purpose)
 Tài liệu này đặc tả chi tiết toàn bộ các yêu cầu chức năng (Functional Requirements - FR), yêu cầu phi chức năng (Non-Functional Requirements - NFR), quy tắc nghiệp vụ (Business Rules), ràng buộc dữ liệu (Data Constraints) và ma trận kiểm soát của hệ thống **iTick**. Đây là tài liệu căn cứ để Chủ hệ thống triển khai mã nguồn, cài đặt lỗi kiểm thử có kiểm soát, đồng thời là cơ sở duy nhất để Tester thiết kế bộ kịch bản kiểm thử thủ công, kiểm thử tự động API (Postman/Newman), kiểm thử giao diện (Puppeteer) và kiểm thử hiệu năng (JMeter).
 
-### 1.2. Kiến trúc & Công nghệ Thực thi (System Architecture)
+#
+> **Deploy URL**: [https://itick-platform.onrender.com/](https://itick-platform.onrender.com/)  
+> **GitHub Repo**: [https://github.com/DYouth572/itick-platform](https://github.com/DYouth572/itick-platform)  
+> **Google Drive**: [https://drive.google.com/drive/folders/1K9Mq0RubxVY5YOycdWN-DqwUO4dmS-kc?usp=sharing](https://drive.google.com/drive/folders/1K9Mq0RubxVY5YOycdWN-DqwUO4dmS-kc?usp=sharing)
+
+## 1.2. Kiến trúc & Công nghệ Thực thi (System Architecture)
 - **Mô hình kiến trúc**: Monolithic RESTful API kết hợp Server-Side Rendering (SSR).
 - **Backend**: Python 3.11+ / FastAPI, Pydantic v2 (Validation), Uvicorn (ASGI Server), chạy cổng `8001`.
 - **Database**: SQLite 3 (WAL Mode, Foreign Keys enabled) / PostgreSQL.
