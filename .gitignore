@@ -28,3 +28,13 @@ Thumbs.db
 node_modules/
 
 ~$*
+
+# ====================================================================
+# SECRET / CONFIDENTIAL: HỒ SƠ BẪY LỖI (BUG MANIFEST)
+# Tuyệt đối không commit lên Git công khai (Chỉ nộp riêng cho GV)
+# ====================================================================
+*Bug_Manifest*
+*bug_manifest*
+*generate_bug_manifest*
+update_expanded_bugs.py
+evidence/
