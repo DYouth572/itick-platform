@@ -2,14 +2,21 @@
 """
 Script build_urd_by_template.py
 Chuyển đổi và sinh hoàn chỉnh tài liệu URD_EventTick.docx
-tuân thủ 100% mẫu chuẩn 03_URD_BIEU_MAU_TRONG (1).docx và yêu cầu kỹ thuật:
-- Khóa cứng phông Times New Roman 13pt (4 thuộc tính XML: ascii, hAnsi, cs, eastAsia).
-- Màu chữ tự động đen tuyền #000000.
-- Căn lề A4: Trên 2cm, Dưới 2cm, Trái 3cm (đóng gáy), Phải 1.5cm.
-- Giãn dòng 1.35, giãn đoạn 4pt - 6pt.
-- Bảng biểu: Viền mảnh #CCCCCC, tiêu đề in đậm nền xám nhẹ #F2F2F2, cantSplit & tblHeader.
-- Công thức Toán/Tài chính: Microsoft Equation bản địa (OMML qua MML2OMML.XSL).
-- Tác giả: Lại Thị Thanh Xuân – MSSV: 23110309.
+tuân thủ 100% các tiêu chuẩn khắt khe:
+1. Chuẩn phông chữ & Thể thức:
+   - Phông Times New Roman duy nhất, cỡ chữ 13pt cho nội dung thường.
+   - Giãn dòng 1.35 lines, giãn đoạn After 6pt (Before 0pt).
+   - Khóa cứng thuộc tính w:ascii, w:hAnsi, w:cs, w:eastAsia trong XML.
+   - Căn lề chuẩn trang in: Trái 3.0cm, Phải 2.0cm, Trên 2.0cm, Dưới 2.0cm.
+2. Mục lục & Phân cấp đề mục:
+   - Đánh số thứ tự khoa học (1., 1.1., 1.1.1.) và áp dụng đúng style Heading 1, Heading 2, Heading 3.
+   - Trường mã mục lục tự động (TOC field) kết hợp tab stop dot leader (...) nối sang số trang.
+3. Công thức toán học & Bảng biểu:
+   - Công thức Microsoft Equation bản địa (OMML qua MML2OMML.XSL) căn giữa sắc nét.
+   - Tiêu đề bảng biểu đầy đủ, header bôi đậm nền xám nhẹ #F2F2F2, viền mảnh #CCCCCC, căn chỉnh thẳng hàng, cantSplit & tblHeader.
+4. Sơ đồ Use Case & Biểu đồ Flowchart:
+   - Độ phân giải cao 300 DPI, căn giữa trang tài liệu, khung viền mờ trang nhã, caption đánh số bên dưới.
+   - Cung cấp cú pháp Mermaid / PlantUML chuẩn xác.
 """
 
 import os, sys, unicodedata
@@ -23,7 +30,6 @@ from docx.oxml.ns import nsdecls, qn
 
 sys.stdout.reconfigure(encoding='utf-8')
 
-# Đường dẫn tài nguyên
 DOCS_DIR = r"D:\SJ_Testing\Project\docs"
 ASSETS_DIR = os.path.join(DOCS_DIR, "assets")
 OUTPUT_PATH = os.path.join(DOCS_DIR, "URD_EventTick.docx")
@@ -65,20 +71,20 @@ def set_run_font(run, font_name="Times New Roman", size_pt=13, bold=False, itali
     rFonts.set(qn('w:cs'), font_name)
     rFonts.set(qn('w:eastAsia'), font_name)
 
-def set_para_format(p, space_before_pt=0, space_after_pt=5, line_spacing=1.35, align=WD_ALIGN_PARAGRAPH.LEFT):
+def set_para_format(p, space_before_pt=0, space_after_pt=6, line_spacing=1.35, align=WD_ALIGN_PARAGRAPH.LEFT):
     p.paragraph_format.space_before = Pt(space_before_pt)
     p.paragraph_format.space_after = Pt(space_after_pt)
     p.paragraph_format.line_spacing = line_spacing
     p.alignment = align
 
 def apply_doc_standards(doc):
-    style = doc.styles['Normal']
-    font = style.font
-    font.name = 'Times New Roman'
-    font.size = Pt(13)
-    font.color.rgb = RGBColor(0, 0, 0)
+    # Khóa cứng style Normal
+    style_normal = doc.styles['Normal']
+    style_normal.font.name = 'Times New Roman'
+    style_normal.font.size = Pt(13)
+    style_normal.font.color.rgb = RGBColor(0, 0, 0)
     
-    rPr = style._element.get_or_add_rPr()
+    rPr = style_normal._element.get_or_add_rPr()
     rFonts = rPr.find(qn('w:rFonts'))
     if rFonts is None:
         rFonts = OxmlElement('w:rFonts')
@@ -88,15 +94,36 @@ def apply_doc_standards(doc):
     rFonts.set(qn('w:cs'), 'Times New Roman')
     rFonts.set(qn('w:eastAsia'), 'Times New Roman')
 
+    # Khóa cứng các style Heading
+    for h_name, h_size in [('Heading 1', 16), ('Heading 2', 14.5), ('Heading 3', 13.5)]:
+        try:
+            h_style = doc.styles[h_name]
+            h_style.font.name = 'Times New Roman'
+            h_style.font.size = Pt(h_size)
+            h_style.font.bold = True
+            h_style.font.color.rgb = RGBColor(0, 0, 0)
+            hrPr = h_style._element.get_or_add_rPr()
+            hrFonts = hrPr.find(qn('w:rFonts'))
+            if hrFonts is None:
+                hrFonts = OxmlElement('w:rFonts')
+                hrPr.append(hrFonts)
+            hrFonts.set(qn('w:ascii'), 'Times New Roman')
+            hrFonts.set(qn('w:hAnsi'), 'Times New Roman')
+            hrFonts.set(qn('w:cs'), 'Times New Roman')
+            hrFonts.set(qn('w:eastAsia'), 'Times New Roman')
+        except Exception:
+            pass
+
+    # Căn lề chuẩn trang in: Trái 3cm, Phải 2cm, Trên 2cm, Dưới 2cm
     for s in doc.sections:
         s.top_margin = Inches(2.0 / 2.54)
         s.bottom_margin = Inches(2.0 / 2.54)
         s.left_margin = Inches(3.0 / 2.54)
-        s.right_margin = Inches(1.5 / 2.54)
+        s.right_margin = Inches(2.0 / 2.54)
         s.page_width = Inches(21.0 / 2.54)
         s.page_height = Inches(29.7 / 2.54)
 
-def add_p(doc, text="", bold_prefix="", italic=False, align=WD_ALIGN_PARAGRAPH.LEFT, space_before=0, space_after=5):
+def add_p(doc, text="", bold_prefix="", italic=False, align=WD_ALIGN_PARAGRAPH.LEFT, space_before=0, space_after=6):
     p = doc.add_paragraph()
     set_para_format(p, space_before_pt=space_before, space_after_pt=space_after, align=align)
     if bold_prefix:
@@ -109,7 +136,7 @@ def add_p(doc, text="", bold_prefix="", italic=False, align=WD_ALIGN_PARAGRAPH.L
 
 def add_bullet(doc, text="", bold_prefix=""):
     p = doc.add_paragraph(style='List Bullet')
-    set_para_format(p, space_before_pt=0, space_after_pt=4, align=WD_ALIGN_PARAGRAPH.LEFT)
+    set_para_format(p, space_before_pt=0, space_after_pt=5, align=WD_ALIGN_PARAGRAPH.LEFT)
     if bold_prefix:
         r_pre = p.add_run(nfc(bold_prefix))
         set_run_font(r_pre, size_pt=13, bold=True)
@@ -119,29 +146,68 @@ def add_bullet(doc, text="", bold_prefix=""):
     return p
 
 def add_h1(doc, text, align=WD_ALIGN_PARAGRAPH.LEFT, space_before=14, space_after=6):
-    p = doc.add_paragraph()
+    p = doc.add_paragraph(style='Heading 1')
     set_para_format(p, space_before_pt=space_before, space_after_pt=space_after, align=align)
     r = p.add_run(nfc(text))
     set_run_font(r, size_pt=16, bold=True)
     return p
 
 def add_h2(doc, text, align=WD_ALIGN_PARAGRAPH.LEFT, space_before=12, space_after=5):
-    p = doc.add_paragraph()
+    p = doc.add_paragraph(style='Heading 2')
     set_para_format(p, space_before_pt=space_before, space_after_pt=space_after, align=align)
     r = p.add_run(nfc(text))
-    set_run_font(r, size_pt=15, bold=True)
+    set_run_font(r, size_pt=14.5, bold=True)
     return p
 
 def add_h3(doc, text, align=WD_ALIGN_PARAGRAPH.LEFT, space_before=10, space_after=4):
-    p = doc.add_paragraph()
+    p = doc.add_paragraph(style='Heading 3')
     set_para_format(p, space_before_pt=space_before, space_after_pt=space_after, align=align)
     r = p.add_run(nfc(text))
-    set_run_font(r, size_pt=14, bold=True)
+    set_run_font(r, size_pt=13.5, bold=True)
     return p
+
+def add_native_toc_field(doc):
+    """Thêm mã trường TOC tự động của Word"""
+    p_toc = doc.add_paragraph()
+    set_para_format(p_toc, space_before_pt=4, space_after_pt=6)
+    
+    r1 = p_toc.add_run()
+    fld1 = parse_xml(f'<w:fldChar {nsdecls("w")} w:fldCharType="begin"/>')
+    r1._r.append(fld1)
+    
+    r2 = p_toc.add_run()
+    instr = parse_xml(f'<w:instrText {nsdecls("w")} xml:space="preserve"> TOC \\o "1-3" \\h \\z \\u </w:instrText>')
+    r2._r.append(instr)
+    
+    r3 = p_toc.add_run()
+    fld2 = parse_xml(f'<w:fldChar {nsdecls("w")} w:fldCharType="separate"/>')
+    r3._r.append(fld2)
+    
+    r4 = p_toc.add_run()
+    fld3 = parse_xml(f'<w:fldChar {nsdecls("w")} w:fldCharType="end"/>')
+    r4._r.append(fld3)
+
+def add_toc_line(doc, title, page_num, level=1):
+    """Thêm một dòng mục lục có tab stop dấu chấm chấm (...) tự động tới lề phải 16cm (9072 dxa)"""
+    p = doc.add_paragraph()
+    set_para_format(p, space_before_pt=1, space_after_pt=2, line_spacing=1.2)
+    pPr = p._p.get_or_add_pPr()
+    tabs = parse_xml(f'<w:tabs {nsdecls("w")}><w:tab w:val="right" w:leader="dot" w:pos="9072"/></w:tabs>')
+    pPr.append(tabs)
+    
+    indent = "    " * (level - 1)
+    r1 = p.add_run(nfc(indent + title))
+    set_run_font(r1, size_pt=12, bold=(level == 1))
+    
+    r_tab = p.add_run("\t")
+    set_run_font(r_tab, size_pt=12)
+    
+    r2 = p.add_run(nfc(str(page_num)))
+    set_run_font(r2, size_pt=12, bold=(level == 1))
 
 def add_formula_block(doc, mml_str, label=""):
     p = doc.add_paragraph()
-    set_para_format(p, space_before_pt=5, space_after_pt=7, align=WD_ALIGN_PARAGRAPH.CENTER)
+    set_para_format(p, space_before_pt=6, space_after_pt=8, align=WD_ALIGN_PARAGRAPH.CENTER)
     if XSLT is not None:
         try:
             mml = ET.fromstring(mml_str.encode('utf-8'))
@@ -178,8 +244,8 @@ def set_cell_border_and_shading(cell, top="CCCCCC", bottom="CCCCCC", left="CCCCC
         f'<w:tcMar {nsdecls("w")}>'
         f'<w:top w:w="120" w:type="dxa"/>'
         f'<w:bottom w:w="120" w:type="dxa"/>'
-        f'<w:left w:w="160" w:type="dxa"/>'
-        f'<w:right w:w="160" w:type="dxa"/>'
+        f'<w:left w:w="150" w:type="dxa"/>'
+        f'<w:right w:w="150" w:type="dxa"/>'
         f'</w:tcMar>'
     )
     tcPr.append(mar)
@@ -231,10 +297,10 @@ def add_styled_table(doc, headers, rows_data, col_widths=None, num_align_cols=No
     set_para_format(p_spacer, space_before_pt=0, space_after_pt=6)
     return table
 
-def add_image_block(doc, image_path, caption_text, width_inches=6.2):
+def add_image_block(doc, image_path, caption_text, width_inches=6.0):
     if os.path.exists(image_path):
         p_img = doc.add_paragraph()
-        set_para_format(p_img, space_before_pt=6, space_after_pt=4, align=WD_ALIGN_PARAGRAPH.CENTER)
+        set_para_format(p_img, space_before_pt=8, space_after_pt=4, align=WD_ALIGN_PARAGRAPH.CENTER)
         run_img = p_img.add_run()
         run_img.add_picture(image_path, width=Inches(width_inches))
         
@@ -247,6 +313,27 @@ def add_image_block(doc, image_path, caption_text, width_inches=6.2):
         set_para_format(p_err, space_before_pt=4, space_after_pt=6, align=WD_ALIGN_PARAGRAPH.CENTER)
         r = p_err.add_run(nfc(f"[Không tìm thấy tệp ảnh: {os.path.basename(image_path)}]"))
         set_run_font(r, size_pt=12, italic=True, color_rgb="CC0000")
+
+def add_code_syntax_box(doc, syntax_type, code_text):
+    """Thêm hộp hiển thị mã nguồn Mermaid / PlantUML trang nhã"""
+    p_head = doc.add_paragraph()
+    set_para_format(p_head, space_before_pt=4, space_after_pt=2)
+    r_head = p_head.add_run(nfc(f"Cú pháp {syntax_type} chuẩn để tùy biến / chỉnh sửa:"))
+    set_run_font(r_head, size_pt=11.5, bold=True, italic=True, color_rgb="1E3A8A")
+
+    table = doc.add_table(rows=1, cols=1)
+    table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    cell = table.rows[0].cells[0]
+    cell.width = Inches(6.0)
+    set_cell_border_and_shading(cell, top="94A3B8", bottom="94A3B8", left="94A3B8", right="94A3B8", bg_color="F8FAFC")
+    
+    p = cell.paragraphs[0]
+    set_para_format(p, space_before_pt=4, space_after_pt=4, line_spacing=1.15)
+    r = p.add_run(code_text)
+    set_run_font(r, font_name="Consolas", size_pt=10, color_rgb="0F172A")
+    
+    p_sp = doc.add_paragraph()
+    set_para_format(p_sp, space_before_pt=0, space_after_pt=6)
 
 def build_urd_document():
     doc = docx.Document()
@@ -295,85 +382,73 @@ def build_urd_document():
 
     # ================= MỤC LỤC & DANH MỤC =================
     add_h1(doc, "Mục lục")
+    add_native_toc_field(doc)
+
     toc_items = [
-        ("Mục lục", "2"),
-        ("Danh mục hình ảnh, bảng biểu", "3"),
-        ("1   Giới thiệu", "4"),
-        ("  1.1   Mục đích tài liệu", "4"),
-        ("  1.2   Phạm vi và đối tượng sử dụng", "4"),
-        ("  1.3   Từ điển thuật ngữ", "4"),
-        ("  1.4   Ký hiệu sử dụng", "4"),
-        ("  1.5   Căn cứ và tài liệu tham khảo", "4"),
-        ("2   Mô tả chung về hệ thống", "5"),
-        ("  2.1   Mô tả hệ thống hiện tại", "5"),
-        ("  2.2   Hạn chế của hệ thống hiện tại", "5"),
-        ("  2.3   Mức độ sử dụng và tăng trưởng giao dịch", "5"),
-        ("  2.4   Mục tiêu của hệ thống cần xây dựng", "5"),
-        ("  2.5   Khung cảnh dự án", "5"),
-        ("  2.6   Ngữ cảnh hệ thống", "6"),
-        ("  2.7   Hiệu quả mong đợi", "6"),
-        ("3   Yêu cầu nghiệp vụ chi tiết", "7"),
-        ("  3.1   Sơ đồ hoạt động nghiệp vụ tương lai", "7"),
-        ("  3.2   Luồng Đặt vé & Thanh toán trực tuyến", "7"),
-        ("    3.2.1   Yêu cầu thông tin (các trường dữ liệu)", "7"),
-        ("    3.2.2   Trạng thái của đối tượng", "8"),
-        ("    3.2.3   Mô tả các chức năng", "8"),
-        ("    3.2.4   Bảng mã lỗi", "9"),
-        ("  3.3   Luồng Soát vé tại cổng (Check-in Scanner Station)", "9"),
-        ("    3.3.1   Yêu cầu thông tin", "9"),
-        ("    3.3.2   Trạng thái soát vé", "10"),
-        ("    3.3.3   Mô tả chức năng soát vé", "10"),
-        ("    3.3.4   Bảng mã lỗi soát vé", "10"),
-        ("  3.4   Luồng Quản lý Sự kiện & Doanh thu (Ban tổ chức)", "11"),
-        ("    3.4.1   Yêu cầu thông tin sự kiện & phân hạng vé", "11"),
-        ("    3.4.2   Quy tắc tài chính & Cơ chế trích phí sàn 5%", "11"),
-        ("    3.4.3   Bảng mã lỗi quản lý sự kiện", "12"),
-        ("4   Yêu cầu giao diện và dữ liệu", "12"),
-        ("5   Yêu cầu phi chức năng", "13"),
-        ("6   Bảng tổng hợp các yêu cầu chức năng", "14"),
+        ("Mục lục", "2", 1),
+        ("Danh mục hình ảnh, bảng biểu", "3", 1),
+        ("1   Giới thiệu", "4", 1),
+        ("1.1   Mục đích tài liệu", "4", 2),
+        ("1.2   Phạm vi và đối tượng sử dụng", "4", 2),
+        ("1.3   Từ điển thuật ngữ", "4", 2),
+        ("1.4   Ký hiệu sử dụng", "4", 2),
+        ("1.5   Căn cứ và tài liệu tham khảo", "4", 2),
+        ("2   Mô tả chung về hệ thống", "5", 1),
+        ("2.1   Mô tả hệ thống hiện tại", "5", 2),
+        ("2.2   Hạn chế của hệ thống hiện tại", "5", 2),
+        ("2.3   Mức độ sử dụng và tăng trưởng giao dịch", "5", 2),
+        ("2.4   Mục tiêu của hệ thống cần xây dựng", "5", 2),
+        ("2.5   Khung cảnh dự án", "5", 2),
+        ("2.6   Ngữ cảnh hệ thống", "6", 2),
+        ("2.7   Hiệu quả mong đợi", "6", 2),
+        ("3   Yêu cầu nghiệp vụ chi tiết", "7", 1),
+        ("3.1   Sơ đồ hoạt động nghiệp vụ tương lai", "7", 2),
+        ("3.2   Luồng Đặt vé & Thanh toán trực tuyến", "7", 2),
+        ("3.2.1   Yêu cầu thông tin (các trường dữ liệu)", "7", 3),
+        ("3.2.2   Trạng thái của đối tượng", "8", 3),
+        ("3.2.3   Mô tả các chức năng", "8", 3),
+        ("3.2.4   Bảng mã lỗi", "9", 3),
+        ("3.3   Luồng Soát vé tại cổng (Check-in Scanner Station)", "9", 2),
+        ("3.3.1   Yêu cầu thông tin", "9", 3),
+        ("3.3.2   Trạng thái soát vé", "10", 3),
+        ("3.3.3   Mô tả chức năng soát vé", "10", 3),
+        ("3.3.4   Bảng mã lỗi soát vé", "10", 3),
+        ("3.4   Luồng Quản lý Sự kiện & Doanh thu (Ban tổ chức)", "11", 2),
+        ("3.4.1   Yêu cầu thông tin sự kiện & phân hạng vé", "11", 3),
+        ("3.4.2   Quy tắc tài chính & Cơ chế trích phí sàn 5%", "11", 3),
+        ("3.4.3   Bảng mã lỗi quản lý sự kiện", "12", 3),
+        ("4   Yêu cầu giao diện và dữ liệu", "12", 1),
+        ("5   Yêu cầu phi chức năng", "13", 1),
+        ("6   Bảng tổng hợp các yêu cầu chức năng", "14", 1),
     ]
-    for item, page in toc_items:
-        p = doc.add_paragraph()
-        set_para_format(p, space_before_pt=1, space_after_pt=2, line_spacing=1.2)
-        r1 = p.add_run(nfc(item))
-        set_run_font(r1, size_pt=12, bold=("  " not in item))
-        r_dots = p.add_run(nfc(" " + "." * max(5, 75 - len(item) * 2) + " "))
-        set_run_font(r_dots, size_pt=10, italic=True)
-        r2 = p.add_run(nfc(page))
-        set_run_font(r2, size_pt=12, bold=True)
+    for title, pg, lvl in toc_items:
+        add_toc_line(doc, title, pg, level=lvl)
 
     p_spacer = doc.add_paragraph()
     set_para_format(p_spacer, space_before_pt=6, space_after_pt=6)
 
     add_h1(doc, "Danh mục hình ảnh, bảng biểu")
-    add_p(doc, "Hình 3-1: Sơ đồ hoạt động nghiệp vụ tương lai ..................................................................... Trang 7", bold_prefix="")
+    add_toc_line(doc, "Hình 3-1: Sơ đồ hoạt động nghiệp vụ tương lai", "7", level=1)
     
     tables_list = [
-        ("Bảng 1-1: Từ điển thuật ngữ", "Trang 4"),
-        ("Bảng 1-2: Các ký hiệu sử dụng trong tài liệu", "Trang 4"),
-        ("Bảng 2-1: Mức độ sử dụng và tăng trưởng giao dịch", "Trang 5"),
-        ("Bảng 2-2: Khung cảnh dự án", "Trang 5"),
-        ("Bảng 2-3: Ngữ cảnh hệ thống — các hệ thống liên quan", "Trang 6"),
-        ("Bảng 3-1: Yêu cầu thông tin của luồng Đặt vé & Thanh toán", "Trang 7"),
-        ("Bảng 3-2: Các trạng thái của đơn hàng và vé", "Trang 8"),
-        ("Bảng 3-3: Bảng mã lỗi của luồng Đặt vé & Thanh toán", "Trang 9"),
-        ("Bảng 3-4: Yêu cầu thông tin của luồng Soát vé tại cổng", "Trang 9"),
-        ("Bảng 3-5: Trạng thái và phản hồi tại trạm Soát vé", "Trang 10"),
-        ("Bảng 3-6: Bảng mã lỗi của trạm Soát vé Check-in", "Trang 10"),
-        ("Bảng 3-7: Yêu cầu thông tin luồng Quản lý Sự kiện", "Trang 11"),
-        ("Bảng 3-8: Bảng mã lỗi luồng Quản lý Sự kiện", "Trang 12"),
-        ("Bảng 5-1: Các yêu cầu phi chức năng", "Trang 13"),
-        ("Bảng 6-1: Bảng tổng hợp các yêu cầu chức năng", "Trang 14"),
+        ("Bảng 1-1: Từ điển thuật ngữ", "4"),
+        ("Bảng 1-2: Các ký hiệu sử dụng trong tài liệu", "4"),
+        ("Bảng 2-1: Mức độ sử dụng và tăng trưởng giao dịch", "5"),
+        ("Bảng 2-2: Khung cảnh dự án", "5"),
+        ("Bảng 2-3: Ngữ cảnh hệ thống — các hệ thống liên quan", "6"),
+        ("Bảng 3-1: Yêu cầu thông tin của luồng Đặt vé & Thanh toán", "7"),
+        ("Bảng 3-2: Các trạng thái của đơn hàng và vé", "8"),
+        ("Bảng 3-3: Bảng mã lỗi của luồng Đặt vé & Thanh toán", "9"),
+        ("Bảng 3-4: Yêu cầu thông tin của luồng Soát vé tại cổng", "9"),
+        ("Bảng 3-5: Trạng thái và phản hồi tại trạm Soát vé", "10"),
+        ("Bảng 3-6: Bảng mã lỗi của trạm Soát vé Check-in", "10"),
+        ("Bảng 3-7: Yêu cầu thông tin luồng Quản lý Sự kiện", "11"),
+        ("Bảng 3-8: Bảng mã lỗi luồng Quản lý Sự kiện", "12"),
+        ("Bảng 5-1: Các yêu cầu phi chức năng", "13"),
+        ("Bảng 6-1: Bảng tổng hợp các yêu cầu chức năng", "14"),
     ]
     for tbl_name, tbl_pg in tables_list:
-        p = doc.add_paragraph()
-        set_para_format(p, space_before_pt=1, space_after_pt=2, line_spacing=1.2)
-        r1 = p.add_run(nfc(tbl_name))
-        set_run_font(r1, size_pt=12)
-        r_dots = p.add_run(nfc(" " + "." * max(5, 70 - len(tbl_name) * 2) + " "))
-        set_run_font(r_dots, size_pt=10, italic=True)
-        r2 = p.add_run(nfc(tbl_pg))
-        set_run_font(r2, size_pt=12, bold=True)
+        add_toc_line(doc, tbl_name, tbl_pg, level=1)
 
     doc.add_page_break()
 
@@ -509,7 +584,28 @@ def build_urd_document():
         "Sơ đồ Hình 3-1 thể hiện tổng quan luồng hoạt động nghiệp vụ tương lai của hệ thống iTick: từ lúc Ban tổ chức tạo sự kiện, người mua chọn vé & thanh toán trực tuyến, hệ thống cấp phát vé QR, đến bước nhân viên quét mã kiểm soát tại cổng sự kiện:",
         bold_prefix=""
     )
-    add_image_block(doc, os.path.join(ASSETS_DIR, "diagram_future_process.png"), "Hình 3-1: Sơ đồ hoạt động nghiệp vụ tương lai của hệ thống iTick", width_inches=6.2)
+    add_image_block(doc, os.path.join(ASSETS_DIR, "diagram_future_process.png"), "Hình 3-1: Sơ đồ hoạt động nghiệp vụ tương lai của hệ thống iTick", width_inches=6.0)
+
+    # Cung cấp cú pháp Mermaid chuẩn
+    mermaid_future = (
+        "sequenceDiagram\n"
+        "  autonumber\n"
+        "  actor BTC as Ban tổ chức (Organizer)\n"
+        "  actor KH as Khách hàng (Customer)\n"
+        "  participant SVR as Máy chủ iTick Platform\n"
+        "  participant PAY as Cổng Thanh toán (VNPay)\n"
+        "  actor GATE as Trạm Soát vé (Check-in)\n\n"
+        "  BTC->>SVR: 1. Tạo sự kiện & Thiết lập phân hạng vé\n"
+        "  KH->>SVR: 2. Xem chi tiết & Chọn vé (Hold 10 phút)\n"
+        "  KH->>PAY: 3. Nhập thẻ/quét QR thanh toán\n"
+        "  PAY-->>SVR: 4. Callback xác nhận giao dịch thành công\n"
+        "  SVR->>SVR: 5. Trích 5% phí sàn & Cấp mã QR vé duy nhất\n"
+        "  SVR-->>KH: 6. Gửi vé điện tử vào hòm thư Email\n"
+        "  KH->>GATE: 7. Xuất trình mã QR tại cổng sự kiện\n"
+        "  GATE->>SVR: 8. Quét mã xác thực (< 0.5s) & Chuyển CHECKED_IN\n"
+        "  SVR-->>BTC: 9. Cập nhật Dashboard doanh thu & lượt vào cổng"
+    )
+    add_code_syntax_box(doc, "Mermaid Sequence Diagram", mermaid_future)
 
     # 3.2 Luồng Đặt vé & Thanh toán
     add_h2(doc, "3.2   Luồng Đặt vé & Thanh toán trực tuyến")

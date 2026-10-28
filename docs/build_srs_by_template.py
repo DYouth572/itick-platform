@@ -2,14 +2,21 @@
 """
 Script build_srs_by_template.py
 Chuyển đổi và sinh hoàn chỉnh tài liệu SRS_EventTick.docx
-tuân thủ 100% mẫu chuẩn 04_SRS_BIEU_MAU_TRONG (1).docx và yêu cầu kỹ thuật:
-- Khóa cứng phông Times New Roman 13pt (4 thuộc tính XML: ascii, hAnsi, cs, eastAsia).
-- Màu chữ tự động đen tuyền #000000.
-- Căn lề A4: Trên 2cm, Dưới 2cm, Trái 3cm (đóng gáy), Phải 1.5cm.
-- Giãn dòng 1.35, giãn đoạn 4pt - 6pt.
-- Bảng biểu: Viền mảnh #CCCCCC, tiêu đề in đậm nền xám nhẹ #F2F2F2, cantSplit & tblHeader.
-- Công thức Toán/Tài chính: Microsoft Equation bản địa (OMML qua MML2OMML.XSL).
-- Tác giả: Lại Thị Thanh Xuân – MSSV: 23110309.
+tuân thủ 100% các tiêu chuẩn khắt khe:
+1. Chuẩn phông chữ & Thể thức:
+   - Phông Times New Roman duy nhất, cỡ chữ 13pt cho nội dung thường.
+   - Giãn dòng 1.35 lines, giãn đoạn After 6pt (Before 0pt).
+   - Khóa cứng thuộc tính w:ascii, w:hAnsi, w:cs, w:eastAsia trong XML.
+   - Căn lề chuẩn trang in: Trái 3.0cm, Phải 2.0cm, Trên 2.0cm, Dưới 2.0cm.
+2. Mục lục & Phân cấp đề mục:
+   - Đánh số thứ tự khoa học (1., 1.1., 1.1.1.) và áp dụng đúng style Heading 1, Heading 2, Heading 3.
+   - Trường mã mục lục tự động (TOC field) kết hợp tab stop dot leader (...) nối sang số trang.
+3. Công thức toán học & Bảng biểu:
+   - Công thức Microsoft Equation bản địa (OMML qua MML2OMML.XSL) căn giữa sắc nét.
+   - Tiêu đề bảng biểu đầy đủ, header bôi đậm nền xám nhẹ #F2F2F2, viền mảnh #CCCCCC, căn chỉnh thẳng hàng, cantSplit & tblHeader.
+4. Sơ đồ Use Case & Biểu đồ Flowchart:
+   - Độ phân giải cao 300 DPI, căn giữa trang tài liệu, khung viền mờ trang nhã, caption đánh số bên dưới.
+   - Cung cấp cú pháp Mermaid / PlantUML chuẩn xác.
 """
 
 import os, sys, unicodedata
@@ -64,20 +71,19 @@ def set_run_font(run, font_name="Times New Roman", size_pt=13, bold=False, itali
     rFonts.set(qn('w:cs'), font_name)
     rFonts.set(qn('w:eastAsia'), font_name)
 
-def set_para_format(p, space_before_pt=0, space_after_pt=5, line_spacing=1.35, align=WD_ALIGN_PARAGRAPH.LEFT):
+def set_para_format(p, space_before_pt=0, space_after_pt=6, line_spacing=1.35, align=WD_ALIGN_PARAGRAPH.LEFT):
     p.paragraph_format.space_before = Pt(space_before_pt)
     p.paragraph_format.space_after = Pt(space_after_pt)
     p.paragraph_format.line_spacing = line_spacing
     p.alignment = align
 
 def apply_doc_standards(doc):
-    style = doc.styles['Normal']
-    font = style.font
-    font.name = 'Times New Roman'
-    font.size = Pt(13)
-    font.color.rgb = RGBColor(0, 0, 0)
+    style_normal = doc.styles['Normal']
+    style_normal.font.name = 'Times New Roman'
+    style_normal.font.size = Pt(13)
+    style_normal.font.color.rgb = RGBColor(0, 0, 0)
     
-    rPr = style._element.get_or_add_rPr()
+    rPr = style_normal._element.get_or_add_rPr()
     rFonts = rPr.find(qn('w:rFonts'))
     if rFonts is None:
         rFonts = OxmlElement('w:rFonts')
@@ -87,15 +93,34 @@ def apply_doc_standards(doc):
     rFonts.set(qn('w:cs'), 'Times New Roman')
     rFonts.set(qn('w:eastAsia'), 'Times New Roman')
 
+    for h_name, h_size in [('Heading 1', 16), ('Heading 2', 14.5), ('Heading 3', 13.5)]:
+        try:
+            h_style = doc.styles[h_name]
+            h_style.font.name = 'Times New Roman'
+            h_style.font.size = Pt(h_size)
+            h_style.font.bold = True
+            h_style.font.color.rgb = RGBColor(0, 0, 0)
+            hrPr = h_style._element.get_or_add_rPr()
+            hrFonts = hrPr.find(qn('w:rFonts'))
+            if hrFonts is None:
+                hrFonts = OxmlElement('w:rFonts')
+                hrPr.append(hrFonts)
+            hrFonts.set(qn('w:ascii'), 'Times New Roman')
+            hrFonts.set(qn('w:hAnsi'), 'Times New Roman')
+            hrFonts.set(qn('w:cs'), 'Times New Roman')
+            hrFonts.set(qn('w:eastAsia'), 'Times New Roman')
+        except Exception:
+            pass
+
     for s in doc.sections:
         s.top_margin = Inches(2.0 / 2.54)
         s.bottom_margin = Inches(2.0 / 2.54)
         s.left_margin = Inches(3.0 / 2.54)
-        s.right_margin = Inches(1.5 / 2.54)
+        s.right_margin = Inches(2.0 / 2.54)
         s.page_width = Inches(21.0 / 2.54)
         s.page_height = Inches(29.7 / 2.54)
 
-def add_p(doc, text="", bold_prefix="", italic=False, align=WD_ALIGN_PARAGRAPH.LEFT, space_before=0, space_after=5):
+def add_p(doc, text="", bold_prefix="", italic=False, align=WD_ALIGN_PARAGRAPH.LEFT, space_before=0, space_after=6):
     p = doc.add_paragraph()
     set_para_format(p, space_before_pt=space_before, space_after_pt=space_after, align=align)
     if bold_prefix:
@@ -108,7 +133,7 @@ def add_p(doc, text="", bold_prefix="", italic=False, align=WD_ALIGN_PARAGRAPH.L
 
 def add_bullet(doc, text="", bold_prefix=""):
     p = doc.add_paragraph(style='List Bullet')
-    set_para_format(p, space_before_pt=0, space_after_pt=4, align=WD_ALIGN_PARAGRAPH.LEFT)
+    set_para_format(p, space_before_pt=0, space_after_pt=5, align=WD_ALIGN_PARAGRAPH.LEFT)
     if bold_prefix:
         r_pre = p.add_run(nfc(bold_prefix))
         set_run_font(r_pre, size_pt=13, bold=True)
@@ -118,29 +143,66 @@ def add_bullet(doc, text="", bold_prefix=""):
     return p
 
 def add_h1(doc, text, align=WD_ALIGN_PARAGRAPH.LEFT, space_before=14, space_after=6):
-    p = doc.add_paragraph()
+    p = doc.add_paragraph(style='Heading 1')
     set_para_format(p, space_before_pt=space_before, space_after_pt=space_after, align=align)
     r = p.add_run(nfc(text))
     set_run_font(r, size_pt=16, bold=True)
     return p
 
 def add_h2(doc, text, align=WD_ALIGN_PARAGRAPH.LEFT, space_before=12, space_after=5):
-    p = doc.add_paragraph()
+    p = doc.add_paragraph(style='Heading 2')
     set_para_format(p, space_before_pt=space_before, space_after_pt=space_after, align=align)
     r = p.add_run(nfc(text))
-    set_run_font(r, size_pt=15, bold=True)
+    set_run_font(r, size_pt=14.5, bold=True)
     return p
 
 def add_h3(doc, text, align=WD_ALIGN_PARAGRAPH.LEFT, space_before=10, space_after=4):
-    p = doc.add_paragraph()
+    p = doc.add_paragraph(style='Heading 3')
     set_para_format(p, space_before_pt=space_before, space_after_pt=space_after, align=align)
     r = p.add_run(nfc(text))
-    set_run_font(r, size_pt=14, bold=True)
+    set_run_font(r, size_pt=13.5, bold=True)
     return p
+
+def add_native_toc_field(doc):
+    p_toc = doc.add_paragraph()
+    set_para_format(p_toc, space_before_pt=4, space_after_pt=6)
+    
+    r1 = p_toc.add_run()
+    fld1 = parse_xml(f'<w:fldChar {nsdecls("w")} w:fldCharType="begin"/>')
+    r1._r.append(fld1)
+    
+    r2 = p_toc.add_run()
+    instr = parse_xml(f'<w:instrText {nsdecls("w")} xml:space="preserve"> TOC \\o "1-3" \\h \\z \\u </w:instrText>')
+    r2._r.append(instr)
+    
+    r3 = p_toc.add_run()
+    fld2 = parse_xml(f'<w:fldChar {nsdecls("w")} w:fldCharType="separate"/>')
+    r3._r.append(fld2)
+    
+    r4 = p_toc.add_run()
+    fld3 = parse_xml(f'<w:fldChar {nsdecls("w")} w:fldCharType="end"/>')
+    r4._r.append(fld3)
+
+def add_toc_line(doc, title, page_num, level=1):
+    p = doc.add_paragraph()
+    set_para_format(p, space_before_pt=1, space_after_pt=2, line_spacing=1.2)
+    pPr = p._p.get_or_add_pPr()
+    tabs = parse_xml(f'<w:tabs {nsdecls("w")}><w:tab w:val="right" w:leader="dot" w:pos="9072"/></w:tabs>')
+    pPr.append(tabs)
+    
+    indent = "    " * (level - 1)
+    r1 = p.add_run(nfc(indent + title))
+    set_run_font(r1, size_pt=12, bold=(level == 1))
+    
+    r_tab = p.add_run("\t")
+    set_run_font(r_tab, size_pt=12)
+    
+    r2 = p.add_run(nfc(str(page_num)))
+    set_run_font(r2, size_pt=12, bold=(level == 1))
 
 def add_formula_block(doc, mml_str, label=""):
     p = doc.add_paragraph()
-    set_para_format(p, space_before_pt=5, space_after_pt=7, align=WD_ALIGN_PARAGRAPH.CENTER)
+    set_para_format(p, space_before_pt=6, space_after_pt=8, align=WD_ALIGN_PARAGRAPH.CENTER)
     if XSLT is not None:
         try:
             mml = ET.fromstring(mml_str.encode('utf-8'))
@@ -177,8 +239,8 @@ def set_cell_border_and_shading(cell, top="CCCCCC", bottom="CCCCCC", left="CCCCC
         f'<w:tcMar {nsdecls("w")}>'
         f'<w:top w:w="120" w:type="dxa"/>'
         f'<w:bottom w:w="120" w:type="dxa"/>'
-        f'<w:left w:w="160" w:type="dxa"/>'
-        f'<w:right w:w="160" w:type="dxa"/>'
+        f'<w:left w:w="150" w:type="dxa"/>'
+        f'<w:right w:w="150" w:type="dxa"/>'
         f'</w:tcMar>'
     )
     tcPr.append(mar)
@@ -230,10 +292,10 @@ def add_styled_table(doc, headers, rows_data, col_widths=None, num_align_cols=No
     set_para_format(p_spacer, space_before_pt=0, space_after_pt=6)
     return table
 
-def add_image_block(doc, image_path, caption_text, width_inches=6.2):
+def add_image_block(doc, image_path, caption_text, width_inches=6.0):
     if os.path.exists(image_path):
         p_img = doc.add_paragraph()
-        set_para_format(p_img, space_before_pt=6, space_after_pt=4, align=WD_ALIGN_PARAGRAPH.CENTER)
+        set_para_format(p_img, space_before_pt=8, space_after_pt=4, align=WD_ALIGN_PARAGRAPH.CENTER)
         run_img = p_img.add_run()
         run_img.add_picture(image_path, width=Inches(width_inches))
         
@@ -246,6 +308,26 @@ def add_image_block(doc, image_path, caption_text, width_inches=6.2):
         set_para_format(p_err, space_before_pt=4, space_after_pt=6, align=WD_ALIGN_PARAGRAPH.CENTER)
         r = p_err.add_run(nfc(f"[Không tìm thấy tệp ảnh: {os.path.basename(image_path)}]"))
         set_run_font(r, size_pt=12, italic=True, color_rgb="CC0000")
+
+def add_code_syntax_box(doc, syntax_type, code_text):
+    p_head = doc.add_paragraph()
+    set_para_format(p_head, space_before_pt=4, space_after_pt=2)
+    r_head = p_head.add_run(nfc(f"Cú pháp {syntax_type} chuẩn để tùy biến / chỉnh sửa:"))
+    set_run_font(r_head, size_pt=11.5, bold=True, italic=True, color_rgb="1E3A8A")
+
+    table = doc.add_table(rows=1, cols=1)
+    table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    cell = table.rows[0].cells[0]
+    cell.width = Inches(6.0)
+    set_cell_border_and_shading(cell, top="94A3B8", bottom="94A3B8", left="94A3B8", right="94A3B8", bg_color="F8FAFC")
+    
+    p = cell.paragraphs[0]
+    set_para_format(p, space_before_pt=4, space_after_pt=4, line_spacing=1.15)
+    r = p.add_run(code_text)
+    set_run_font(r, font_name="Consolas", size_pt=10, color_rgb="0F172A")
+    
+    p_sp = doc.add_paragraph()
+    set_para_format(p_sp, space_before_pt=0, space_after_pt=6)
 
 def build_srs_document():
     doc = docx.Document()
@@ -282,7 +364,6 @@ def build_srs_document():
     ))
     set_run_font(r_meta, size_pt=13, italic=False)
 
-    # Bảng phê duyệt (Table 0 trong mẫu)
     headers_0 = ["Biên soạn bởi", "Kiểm thử bởi", "Duyệt bởi", "Phiên bản"]
     data_0 = [
         [f"Chủ hệ thống\n{AUTHOR_FULL}", "Kiểm thử viên (Tester)\nSinh viên B", "Giảng viên phụ trách\nBộ môn Kỹ thuật Phần mềm", "1.2"],
@@ -294,97 +375,78 @@ def build_srs_document():
 
     # ================= MỤC LỤC & DANH MỤC =================
     add_h1(doc, "Mục lục")
+    add_native_toc_field(doc)
+
     toc_items = [
-        ("Mục lục", "2"),
-        ("Danh mục hình ảnh, bảng biểu", "3"),
-        ("1   Giới thiệu", "4"),
-        ("  1.1   Mục đích", "4"),
-        ("  1.2   Phạm vi", "4"),
-        ("  1.3   Từ điển thuật ngữ", "4"),
-        ("  1.4   Tài liệu tham khảo", "4"),
-        ("  1.5   Quy ước mã yêu cầu", "5"),
-        ("2   Các yêu cầu chức năng", "6"),
-        ("  2.1   Các tác nhân", "6"),
-        ("  2.2   Các chức năng của hệ thống", "6"),
-        ("  2.3   Biểu đồ use case tổng quan", "7"),
-        ("  2.4   Biểu đồ use case phân rã", "8"),
-        ("  2.5   Quy trình nghiệp vụ", "9"),
-        ("    2.5.1   Quy trình Đặt vé & Thanh toán trực tuyến", "9"),
-        ("  2.6   Đặc tả các use case", "10"),
-        ("    2.6.1   UC-01: Đăng nhập & Xác thực người dùng", "10"),
-        ("    2.6.2   UC-02: Tìm kiếm & Khám phá sự kiện", "12"),
-        ("    2.6.3   UC-03: Đặt vé & Khóa giữ chỗ 10 phút", "13"),
-        ("    2.6.4   UC-04: Áp dụng Mã giảm giá (Voucher)", "15"),
-        ("    2.6.5   UC-05: Xử lý Thanh toán trực tuyến & Phát hành vé", "16"),
-        ("    2.6.6   UC-06: Quản lý vé của tôi & Tải mã QR", "18"),
-        ("    2.6.7   UC-07: Soát vé Check-in tại cổng bằng Camera/Barcode", "19"),
-        ("    2.6.8   UC-08: Quản lý Sự kiện & Thiết lập phân hạng vé", "21"),
-        ("    2.6.9   UC-09: Báo cáo Doanh thu & Cơ chế trích phí sàn 5%", "23"),
-        ("  2.7   Bảng mã lỗi của hệ thống", "24"),
-        ("  2.8   Ma trận truy vết yêu cầu (Traceability Matrix)", "25"),
-        ("  2.9   Danh sách câu hỏi gửi bộ phận nghiệp vụ", "27"),
-        ("3   Các yêu cầu phi chức năng", "28"),
-        ("  3.1   Giao diện người dùng", "28"),
-        ("  3.2   Hiệu năng", "28"),
-        ("  3.3   Tính bảo mật", "29"),
-        ("  3.4   Ràng buộc", "30"),
+        ("Mục lục", "2", 1),
+        ("Danh mục hình ảnh, bảng biểu", "3", 1),
+        ("1   Giới thiệu", "4", 1),
+        ("1.1   Mục đích", "4", 2),
+        ("1.2   Phạm vi", "4", 2),
+        ("1.3   Từ điển thuật ngữ", "4", 2),
+        ("1.4   Tài liệu tham khảo", "4", 2),
+        ("1.5   Quy ước mã yêu cầu", "5", 2),
+        ("2   Các yêu cầu chức năng", "6", 1),
+        ("2.1   Các tác nhân", "6", 2),
+        ("2.2   Các chức năng của hệ thống", "6", 2),
+        ("2.3   Biểu đồ use case tổng quan", "7", 2),
+        ("2.4   Biểu đồ use case phân rã", "8", 2),
+        ("2.5   Quy trình nghiệp vụ", "9", 2),
+        ("2.5.1   Quy trình Đặt vé & Thanh toán trực tuyến", "9", 3),
+        ("2.6   Đặc tả các use case", "10", 2),
+        ("2.6.1   UC-01: Đăng nhập & Xác thực người dùng", "10", 3),
+        ("2.6.2   UC-02: Tìm kiếm & Khám phá sự kiện", "12", 3),
+        ("2.6.3   UC-03: Đặt vé & Khóa giữ chỗ 10 phút", "13", 3),
+        ("2.6.4   UC-04: Áp dụng Mã giảm giá (Voucher)", "15", 3),
+        ("2.6.5   UC-05: Xử lý Thanh toán trực tuyến & Phát hành vé", "16", 3),
+        ("2.6.6   UC-06: Quản lý vé của tôi & Tải mã QR", "18", 3),
+        ("2.6.7   UC-07: Soát vé Check-in tại cổng bằng Camera/Barcode", "19", 3),
+        ("2.6.8   UC-08: Quản lý Sự kiện & Thiết lập phân hạng vé", "21", 3),
+        ("2.6.9   UC-09: Báo cáo Doanh thu & Cơ chế trích phí sàn 5%", "23", 3),
+        ("2.7   Bảng mã lỗi của hệ thống", "24", 2),
+        ("2.8   Ma trận truy vết yêu cầu (Traceability Matrix)", "25", 2),
+        ("2.9   Danh sách câu hỏi gửi bộ phận nghiệp vụ", "27", 2),
+        ("3   Các yêu cầu phi chức năng", "28", 1),
+        ("3.1   Giao diện người dùng", "28", 2),
+        ("3.2   Hiệu năng", "28", 2),
+        ("3.3   Tính bảo mật", "29", 2),
+        ("3.4   Ràng buộc", "30", 2),
     ]
-    for item, page in toc_items:
-        p = doc.add_paragraph()
-        set_para_format(p, space_before_pt=1, space_after_pt=2, line_spacing=1.2)
-        r1 = p.add_run(nfc(item))
-        set_run_font(r1, size_pt=12, bold=("  " not in item))
-        r_dots = p.add_run(nfc(" " + "." * max(5, 75 - len(item) * 2) + " "))
-        set_run_font(r_dots, size_pt=10, italic=True)
-        r2 = p.add_run(nfc(page))
-        set_run_font(r2, size_pt=12, bold=True)
+    for title, pg, lvl in toc_items:
+        add_toc_line(doc, title, pg, level=lvl)
 
     p_spacer = doc.add_paragraph()
     set_para_format(p_spacer, space_before_pt=6, space_after_pt=6)
 
     add_h1(doc, "Danh mục hình ảnh, bảng biểu")
     images_list = [
-        ("Hình 2-1: Biểu đồ use case tổng quan hệ thống iTick", "Trang 7"),
-        ("Hình 2-2: Biểu đồ use case phân rã chi tiết các phân hệ", "Trang 8"),
-        ("Hình 2-3: Biểu đồ hoạt động của quy trình Đặt vé & Thanh toán", "Trang 9"),
-        ("Hình 2-4: Giao diện màn hình Đăng ký / Đăng nhập (UC-01)", "Trang 11"),
-        ("Hình 2-5: Giao diện màn hình Chi tiết sự kiện & Đặt vé (UC-03)", "Trang 14"),
-        ("Hình 2-6: Giao diện màn hình Quản lý vé của tôi & Mã QR (UC-06)", "Trang 18"),
-        ("Hình 2-7: Giao diện màn hình Trạm soát vé Check-in Station (UC-07)", "Trang 20"),
-        ("Hình 2-8: Giao diện màn hình Dashboard Quản lý Sự kiện (UC-08/09)", "Trang 23"),
+        ("Hình 2-1: Biểu đồ use case tổng quan hệ thống iTick (300 DPI)", "7"),
+        ("Hình 2-2: Biểu đồ use case phân rã chi tiết các phân hệ (300 DPI)", "8"),
+        ("Hình 2-3: Biểu đồ hoạt động của quy trình Đặt vé & Thanh toán (300 DPI)", "9"),
+        ("Hình 2-4: Giao diện màn hình Đăng ký / Đăng nhập (UC-01)", "11"),
+        ("Hình 2-5: Giao diện màn hình Chi tiết sự kiện & Đặt vé (UC-03)", "14"),
+        ("Hình 2-6: Giao diện màn hình Quản lý vé của tôi & Mã QR (UC-06)", "18"),
+        ("Hình 2-7: Giao diện màn hình Trạm soát vé Check-in Station (UC-07)", "20"),
+        ("Hình 2-8: Giao diện màn hình Dashboard Quản lý Sự kiện (UC-08/09)", "23"),
     ]
     for img_name, img_pg in images_list:
-        p = doc.add_paragraph()
-        set_para_format(p, space_before_pt=1, space_after_pt=2, line_spacing=1.2)
-        r1 = p.add_run(nfc(img_name))
-        set_run_font(r1, size_pt=12)
-        r_dots = p.add_run(nfc(" " + "." * max(5, 70 - len(img_name) * 2) + " "))
-        set_run_font(r_dots, size_pt=10, italic=True)
-        r2 = p.add_run(nfc(img_pg))
-        set_run_font(r2, size_pt=12, bold=True)
+        add_toc_line(doc, img_name, img_pg, level=1)
 
     p_spacer2 = doc.add_paragraph()
     set_para_format(p_spacer2, space_before_pt=4, space_after_pt=4)
 
     tables_srs_list = [
-        ("Bảng 1-1: Từ điển thuật ngữ kỹ thuật", "Trang 4"),
-        ("Bảng 1-2: Quy ước mã yêu cầu và mẫu kiểm thử", "Trang 5"),
-        ("Bảng 2-1: Danh sách các tác nhân hệ thống", "Trang 6"),
-        ("Bảng 2-2 đến Bảng 2-11: Bảng đặc tả chức năng & Dữ liệu các Use Case", "Trang 10 - 23"),
-        ("Bảng 2-12: Bảng mã lỗi của hệ thống iTick", "Trang 24"),
-        ("Bảng 2-13: Ma trận truy vết yêu cầu (Traceability Matrix)", "Trang 25"),
-        ("Bảng 2-14: Danh sách câu hỏi gửi bộ phận nghiệp vụ", "Trang 27"),
-        ("Bảng 3-1: Các chỉ tiêu yêu cầu hiệu năng kiểm thử", "Trang 28"),
+        ("Bảng 1-1: Từ điển thuật ngữ kỹ thuật", "4"),
+        ("Bảng 1-2: Quy ước mã yêu cầu và mẫu kiểm thử", "5"),
+        ("Bảng 2-1: Danh sách các tác nhân hệ thống", "6"),
+        ("Bảng 2-2 đến Bảng 2-11: Bảng đặc tả chức năng & Dữ liệu các Use Case", "10 - 23"),
+        ("Bảng 2-12: Bảng mã lỗi của hệ thống iTick", "24"),
+        ("Bảng 2-13: Ma trận truy vết yêu cầu (Traceability Matrix)", "25"),
+        ("Bảng 2-14: Danh sách câu hỏi gửi bộ phận nghiệp vụ", "27"),
+        ("Bảng 3-1: Các chỉ tiêu yêu cầu hiệu năng kiểm thử", "28"),
     ]
     for tbl_name, tbl_pg in tables_srs_list:
-        p = doc.add_paragraph()
-        set_para_format(p, space_before_pt=1, space_after_pt=2, line_spacing=1.2)
-        r1 = p.add_run(nfc(tbl_name))
-        set_run_font(r1, size_pt=12)
-        r_dots = p.add_run(nfc(" " + "." * max(5, 70 - len(tbl_name) * 2) + " "))
-        set_run_font(r_dots, size_pt=10, italic=True)
-        r2 = p.add_run(nfc(tbl_pg))
-        set_run_font(r2, size_pt=12, bold=True)
+        add_toc_line(doc, tbl_name, tbl_pg, level=1)
 
     doc.add_page_break()
 
@@ -479,21 +541,84 @@ def build_srs_document():
     add_bullet(doc, "Tạo sự kiện, thiết lập các hạng vé, mở bán và đóng bán vé tự động theo thời gian.", bold_prefix="8. UC-08: Quản lý sự kiện & Phân hạng vé: ")
     add_bullet(doc, "Thống kê số vé bán ra, tự động trích phí sàn 5%, xuất danh sách người tham dự cho Ban tổ chức.", bold_prefix="9. UC-09: Báo cáo Doanh thu & Phí sàn 5%: ")
 
+    # SƠ ĐỒ USE CASE TỔNG QUAN
     add_h2(doc, "2.3   Biểu đồ use case tổng quan")
-    add_p(doc, "Hình 2-1 biểu diễn bức tranh tổng quan về mối quan hệ giữa các tác nhân và các gói chức năng chính của hệ thống iTick:", bold_prefix="")
-    add_image_block(doc, os.path.join(ASSETS_DIR, "diagram_usecase_overview.png"), "Hình 2-1: Biểu đồ use case tổng quan của hệ thống iTick", width_inches=6.2)
+    add_p(doc, "Hình 2-1 biểu diễn bức tranh tổng quan về mối quan hệ giữa các tác nhân và các gói chức năng chính của hệ thống iTick (kết xuất ở độ phân giải 300 DPI chống mờ hạt):", bold_prefix="")
+    add_image_block(doc, os.path.join(ASSETS_DIR, "diagram_usecase_overview.png"), "Hình 2-1: Biểu đồ use case tổng quan hệ thống iTick (300 DPI)", width_inches=6.0)
 
+    # Cú pháp Mermaid Use Case
+    mermaid_usecase = (
+        "graph LR\n"
+        "  subgraph System [Hệ thống iTick Platform]\n"
+        "    UC1((UC-01: Đăng ký & Đăng nhập))\n"
+        "    UC2((UC-02: Khám phá sự kiện))\n"
+        "    UC3((UC-03: Đặt vé & Giữ chỗ 10p))\n"
+        "    UC4((UC-04: Áp dụng Voucher))\n"
+        "    UC5((UC-05: Thanh toán trực tuyến))\n"
+        "    UC6((UC-06: Quản lý vé của tôi))\n"
+        "    UC7((UC-07: Soát vé tại cổng))\n"
+        "  end\n\n"
+        "  Guest((Khách vãng lai)) --> UC1\n"
+        "  Guest --> UC2\n"
+        "  Customer((Khách mua vé)) --> UC1\n"
+        "  Customer --> UC2\n"
+        "  Customer --> UC3\n"
+        "  Customer --> UC4\n"
+        "  Customer --> UC5\n"
+        "  Customer --> UC6\n"
+        "  Organizer((Ban tổ chức)) --> UC7\n"
+        "  PayOS((Cổng VNPay/PayOS)) -.-> UC5"
+    )
+    add_code_syntax_box(doc, "Mermaid Use Case Diagram", mermaid_usecase)
+
+    # SƠ ĐỒ USE CASE PHÂN RÃ
     add_h2(doc, "2.4   Biểu đồ use case phân rã")
     add_p(doc, "Hình 2-2 thể hiện cấu trúc phân rã chi tiết quan hệ <<include>> và <<extend>> giữa các use case trong phân hệ Đặt vé, Thanh toán và Soát vé:", bold_prefix="")
-    add_image_block(doc, os.path.join(ASSETS_DIR, "diagram_usecase_detail.png"), "Hình 2-2: Biểu đồ use case phân rã chi tiết của hệ thống iTick", width_inches=6.2)
+    add_image_block(doc, os.path.join(ASSETS_DIR, "diagram_usecase_detail.png"), "Hình 2-2: Biểu đồ use case phân rã chi tiết các phân hệ (300 DPI)", width_inches=6.0)
 
+    # PlantUML syntax
+    plantuml_detail = (
+        "@startuml\n"
+        "left to right direction\n"
+        "skinparam packageStyle rectangle\n\n"
+        "(Đặt vé trực tuyến\\nCore Booking UC-03) as (Booking)\n"
+        "(Kiểm tra tồn kho & Khóa giữ chỗ 10p) as (Hold)\n"
+        "(Áp dụng mã giảm giá có trần) as (Voucher)\n"
+        "(Thanh toán trực tuyến VNPay) as (Pay)\n"
+        "(Phát hành vé điện tử QR/Barcode) as (QR)\n"
+        "(Trích 5% phí dịch vụ sàn) as (Fee)\n\n"
+        "(Booking) .> (Hold) : <<include>>\n"
+        "(Booking) .> (QR) : <<include>>\n"
+        "(Booking) .> (Fee) : <<include>>\n"
+        "(Voucher) .> (Booking) : <<extend>>\n"
+        "(Pay) .> (Booking) : <<extend>>\n"
+        "@enduml"
+    )
+    add_code_syntax_box(doc, "PlantUML Use Case Specification", plantuml_detail)
+
+    # QUY TRÌNH NGHIỆP VỤ & FLOWCHART
     add_h2(doc, "2.5   Quy trình nghiệp vụ")
     add_h3(doc, "2.5.1   Quy trình Đặt vé & Thanh toán trực tuyến")
     add_p(doc,
-        "Biểu đồ hoạt động Hình 2-3 mô tả quy trình Đặt vé & Thanh toán. Biểu đồ bao gồm cả luồng thành công và toàn bộ các nhánh rẽ thất bại (hết vé, sai voucher, quá hạn 10 phút, lỗi cổng thanh toán) – đây chính là căn cứ trực tiếp để kiểm thử viên thiết kế các ca kiểm thử âm tính (Negative Test Cases):",
+        "Biểu đồ hoạt động Hình 2-3 mô tả quy trình Đặt vé & Thanh toán. Biểu đồ bao gồm cả luồng thành công và toàn bộ các nhánh rẽ thất bại (hết vé, voucher sai, quá hạn 10 phút, lỗi cổng thanh toán) – đây chính là căn cứ trực tiếp để kiểm thử viên thiết kế các ca kiểm thử âm tính (Negative Test Cases):",
         bold_prefix=""
     )
-    add_image_block(doc, os.path.join(ASSETS_DIR, "diagram_activity_booking.png"), "Hình 2-3: Biểu đồ hoạt động của quy trình Đặt vé & Thanh toán (bao gồm các nhánh thất bại)", width_inches=6.2)
+    add_image_block(doc, os.path.join(ASSETS_DIR, "diagram_activity_booking.png"), "Hình 2-3: Biểu đồ hoạt động của quy trình Đặt vé & Thanh toán (300 DPI)", width_inches=6.0)
+
+    # Cú pháp Mermaid Flowchart với nhánh thất bại
+    mermaid_flowchart = (
+        "flowchart TD\n"
+        "  Start([Bắt đầu: Khách chọn vé]) --> CheckStock{Còn vé tồn kho?}\n"
+        "  CheckStock -- Không đủ / Hết vé --> ErrStock[Báo lỗi ERR_OUT_OF_STOCK] --> EndFail([Kết thúc thất bại])\n"
+        "  CheckStock -- Còn vé --> Hold[Khóa giữ chỗ 10 phút / Order PENDING]\n"
+        "  Hold --> Timeout{Quá hạn 10 phút?}\n"
+        "  Timeout -- Quá 600s --> CancelOrder[Hủy đơn CANCELLED / Hoàn trả vé vào kho] --> EndFail\n"
+        "  Timeout -- Trong 10 phút --> PayGateway[Thanh toán VNPay / Nhập Voucher]\n"
+        "  PayGateway --> PaySuccess{Giao dịch thành công?}\n"
+        "  PaySuccess -- Thất bại --> ErrPay[Báo lỗi ERR_PAYMENT_FAILED] --> RetryPay[Cho phép thử lại trong hạn]\n"
+        "  PaySuccess -- Thành công --> IssueTicket[Cập nhật đơn PAID / Cấp mã QR & Barcode] --> EndSuccess([Kết thúc thành công])"
+    )
+    add_code_syntax_box(doc, "Mermaid Activity Flowchart (Đầy đủ nhánh thất bại)", mermaid_flowchart)
 
     # 2.6 ĐẶC TẢ CÁC USE CASE
     add_h2(doc, "2.6   Đặc tả các use case")
